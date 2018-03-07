@@ -28,15 +28,17 @@ public class ProgramRepository extends GenericRepository<Program> {
     }
 
     public List<Program> findByAdmin(Admin admin) {
+        String query = "select a from Program p join p.admins a where a.id = :aId";
+
         try {
-            return em.createQuery("Select e From Program e where e.admin = :admin")
-                    .setParameter("admin", admin).getResultList();
+            return em.createQuery(query)
+                    .setParameter("aId", admin.getId()).getResultList();
         } catch (final NoResultException e) {
             return null;
         }
     }
 
-    public boolean alreadyExists(Program program){
-        return alreadyExists("name",program.getName(),program.getId());
+    public boolean alreadyExists(Program program) {
+        return alreadyExists("name", program.getName(), program.getId());
     }
 }

@@ -3,10 +3,8 @@ package com.platform.app.program.model;
 import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
 
-import javax.inject.Inject;
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Entity
@@ -19,14 +17,14 @@ public class Program {
     @Column(unique = true)
     private String name;
     @NotNull
-    @ManyToOne
-    private Admin admin;
+    @ManyToMany(cascade = CascadeType.ALL)
+    private Set<Admin> admins = new HashSet<>();
     @OneToMany
     private Set<Customer> activeCustomers = new HashSet<Customer>();
     @Embedded
     private WaitingList waitingList = new WaitingList();
-    @Embedded
-    private ApplicationStub activeApplication;
+    @OneToMany(cascade = CascadeType.ALL)
+    private Set<Application> activeApplications = new HashSet<>();
 
 
     public Long getId() {
@@ -61,12 +59,20 @@ public class Program {
         this.name = name;
     }
 
-    public ApplicationStub getActiveApplication() {
-        return activeApplication;
+    public Set<Application> getActiveApplications() {
+        return activeApplications;
     }
 
-    public void setActiveApplication(ApplicationStub activeApplication) {
-        this.activeApplication = activeApplication;
+    public void setActiveApplications(Set<Application> activeApplications) {
+        this.activeApplications = activeApplications;
+    }
+
+    public void addApplication(Application app) {
+        this.activeApplications.add(app);
+    }
+
+    public void removeApplication(Application app) {
+        this.activeApplications.remove(app);
     }
 
     public void addActiveCustomers(Customer customer) {
@@ -81,12 +87,20 @@ public class Program {
         }
     }
 
-    public Admin getAdmin() {
-        return admin;
+    public Set<Admin> getAdmins() {
+        return admins;
     }
 
-    public void setAdmin(Admin admin) {
-        this.admin = admin;
+    public void setAdmins(Set<Admin> admins) {
+        this.admins = admins;
+    }
+
+    public void addAdmin(Admin admin){
+        this.admins.add(admin);
+    }
+
+    public void removeAdmin(Admin admin){
+        this.admins.remove(admin);
     }
 
     @Override

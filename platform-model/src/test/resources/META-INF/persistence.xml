@@ -11,7 +11,7 @@
         <class>com.platform.app.platformUser.model.Admin</class>
         <class>com.platform.app.platformUser.model.Customer</class>
         <class>com.platform.app.program.model.Program</class>
-        <class>com.platform.app.program.model.ApplicationStub</class>
+        <class>com.platform.app.program.model.Application</class>
         <class>com.platform.app.program.model.WaitingList</class>
 
         <properties>

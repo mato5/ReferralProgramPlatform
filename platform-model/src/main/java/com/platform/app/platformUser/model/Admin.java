@@ -17,14 +17,14 @@ import java.util.Set;
 public class Admin extends User {
     private static final long serialVersionUID = 8976498066151628068L;
 
-    @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
-    private Set<Program> programs = new HashSet<Program>();
+    /*@OneToMany(mappedBy = "admin", cascade = CascadeType.ALL)
+    private Set<Program> programs = new HashSet<Program>();*/
 
     public static long getSerialVersionUID() {
         return serialVersionUID;
     }
 
-	public Set<Program> getPrograms() {
+	/*public Set<Program> getPrograms() {
 		return programs;
 	}
 
@@ -38,7 +38,7 @@ public class Admin extends User {
 
 	public void setPrograms(Set<Program> programs) {
 		this.programs = programs;
-	}
+	}*/
 
     public Admin() {
         setUserType(UserType.EMPLOYEE);

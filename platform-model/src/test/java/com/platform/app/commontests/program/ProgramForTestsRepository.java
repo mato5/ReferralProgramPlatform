@@ -2,15 +2,12 @@ package com.platform.app.commontests.program;
 
 import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
-import com.platform.app.program.model.ApplicationStub;
+import com.platform.app.program.model.Application;
 import com.platform.app.program.model.Program;
-import org.hibernate.boot.jaxb.SourceType;
 import org.junit.Ignore;
 
 import javax.persistence.EntityManager;
-import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import static com.platform.app.commontests.platformUser.UserForTestsRepository.admin;
@@ -32,10 +29,10 @@ public final class ProgramForTestsRepository {
     public static Program program1() {
         final Program program = new Program();
         program.setName("program1");
-        program.setAdmin(admin());
-        ApplicationStub stub = new ApplicationStub();
+        program.addAdmin(admin());
+        Application stub = new Application();
         stub.setDescription("application of program1");
-        program.setActiveApplication(stub);
+        program.addApplication(stub);
         program.getWaitingList().subscribe(johnDoe().getId());
         program.addActiveCustomers(mary());
 
@@ -49,7 +46,7 @@ public final class ProgramForTestsRepository {
      */
     public static Program program2() {
         final Program program = new Program();
-        program.setAdmin(admin());
+        program.addAdmin(admin());
         program.setName("program2");
 
         return program;
@@ -66,9 +63,8 @@ public final class ProgramForTestsRepository {
 
     public static Program normalizeDependencies(final Program program, final EntityManager em) {
         //Admin
-        final Admin associatedAdmin = findByPropertyNameAndValue(em, Admin.class, "email", program.getAdmin()
-                .getEmail());
-        program.setAdmin(associatedAdmin);
+        final Admin associatedAdmin = findByPropertyNameAndValue(em, Admin.class, "email", "admin@domain.com");
+        program.addAdmin(associatedAdmin);
         System.out.println("Admin:");
         System.out.println(associatedAdmin);
 

@@ -2,7 +2,7 @@ package com.platform.app.program.services;
 
 import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
-import com.platform.app.program.model.ApplicationStub;
+import com.platform.app.program.model.Application;
 import com.platform.app.program.model.Program;
 
 import java.util.Date;
@@ -20,9 +20,9 @@ public interface ProgramServices {
 
     Program findById(Long id);
 
-    void registerApplication(ApplicationStub stub, Long programId);
+    void registerApplication(Application stub, Long programId);
 
-    void unregisterApplication(Long programId);
+    void unregisterApplication(Application app, Long programId);
 
     Program registerOnWaitingList(Long programId, Long custromerId);
 

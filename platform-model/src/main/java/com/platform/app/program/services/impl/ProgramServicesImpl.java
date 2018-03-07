@@ -2,7 +2,6 @@ package com.platform.app.program.services.impl;
 
 import com.platform.app.common.exception.FieldNotValidException;
 import com.platform.app.common.utils.ValidationUtils;
-import com.platform.app.invitation.model.Invitation;
 import com.platform.app.invitation.services.InvitationServices;
 import com.platform.app.platformUser.exception.UserNotFoundException;
 import com.platform.app.platformUser.model.Admin;
@@ -12,7 +11,7 @@ import com.platform.app.platformUser.repository.CustomerRepository;
 import com.platform.app.program.exception.ProgramExistentException;
 import com.platform.app.program.exception.ProgramNotFoundException;
 import com.platform.app.program.exception.ProgramServiceException;
-import com.platform.app.program.model.ApplicationStub;
+import com.platform.app.program.model.Application;
 import com.platform.app.program.model.Program;
 import com.platform.app.program.repository.ProgramRepository;
 import com.platform.app.program.services.ProgramServices;
@@ -71,23 +70,25 @@ public class ProgramServicesImpl implements ProgramServices {
         return programRepository.findById(id);
     }
 
+    //Todo
     @Override
-    public void registerApplication(ApplicationStub stub, Long programId) {
+    public void registerApplication(Application stub, Long programId) {
         Program program = programRepository.findById(programId);
-        if (program.getActiveApplication() != null) {
-            throw new ProgramServiceException("This program already has an active application.");
+        if (program.getActiveApplications().contains(stub)) {
+            throw new ProgramServiceException("This program already contains this application.");
         }
-        program.setActiveApplication(stub);
+        program.addApplication(stub);
         programRepository.update(program);
     }
 
+    //Todo
     @Override
-    public void unregisterApplication(Long programId) {
+    public void unregisterApplication(Application app, Long programId) {
         Program program = programRepository.findById(programId);
-        if (program.getActiveApplication() == null) {
-            throw new ProgramServiceException("This program has no active application.");
+        if (!program.getActiveApplications().contains(app)) {
+            throw new ProgramServiceException("This program does not contain the application.");
         }
-        program.setActiveApplication(null);
+        program.getActiveApplications();
         programRepository.update(program);
     }
 
@@ -128,7 +129,7 @@ public class ProgramServicesImpl implements ProgramServices {
         if (!idsOnTheWaitingList.containsAll(userIds)) {
             throw new ProgramServiceException("Inviting from the waiting list contains incorrect IDs");
         }
-        if((adminRepository.findById(adminId))==null){
+        if ((adminRepository.findById(adminId)) == null) {
             throw new ProgramServiceException("This admin does not exist");
         }
         List<Customer> customers = customerRepository.findByIdBatch(userIds);
@@ -137,7 +138,7 @@ public class ProgramServicesImpl implements ProgramServices {
             customerRepository.update(item);
         }
         List<String> emails = customers.stream().map(Customer::getEmail).collect(Collectors.toList());
-        invitationServices.sendInBatch(adminId,programId,emails);
+        invitationServices.sendInBatch(adminId, programId, emails);
     }
 
     private void validateProgram(Program program) throws FieldNotValidException, ProgramExistentException {
