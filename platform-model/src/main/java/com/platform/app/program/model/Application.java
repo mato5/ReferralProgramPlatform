@@ -2,9 +2,11 @@ package com.platform.app.program.model;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotNull;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * A class representing an application
@@ -13,9 +15,9 @@ import java.util.Objects;
 public class Application {
 
     @Id
-    @NotNull
-    @Column(unique = true)
-    private String apiKey;
+    @GeneratedValue
+    @Column(updatable = false, nullable = false)
+    private UUID apiKey;
 
     @NotNull
     private String name;
@@ -31,11 +33,11 @@ public class Application {
     private String invitationURL;
 
 
-    public String getApiKey() {
+    public UUID getApiKey() {
         return apiKey;
     }
 
-    public void setApiKey(String apiKey) {
+    public void setApiKey(UUID apiKey) {
         this.apiKey = apiKey;
     }
 

@@ -39,18 +39,18 @@ public class InvitationRepository extends GenericRepository<Invitation> {
         //return alreadyExists("byUserId","1",invitation.getId());
     }
 
-    public List<Invitation> findByInvitor(Long invitorId){
-        return em.createQuery("Select e from Invitation e where e.byUserId" + " = :propertyValue")
+    public List<Invitation> findByInvitor(Long invitorId) {
+        return em.createQuery("Select e from Invitation e where e.byUserId" + " = :propertyValue", Invitation.class)
                 .setParameter("propertyValue", invitorId).getResultList();
     }
 
-    public List<Invitation> findByProgram(Long programId){
-        return em.createQuery("Select e from Invitation e where e.programId" + " = :propertyValue")
+    public List<Invitation> findByProgram(Long programId) {
+        return em.createQuery("Select e from Invitation e where e.programId" + " = :propertyValue", Invitation.class)
                 .setParameter("propertyValue", programId).getResultList();
     }
 
-    public List<Invitation> findByInvitee(Long inviteeId){
-        return em.createQuery("Select e from Invitation e where e.toUserId" + " = :propertyValue")
+    public List<Invitation> findByInvitee(Long inviteeId) {
+        return em.createQuery("Select e from Invitation e where e.toUserId" + " = :propertyValue", Invitation.class)
                 .setParameter("propertyValue", inviteeId).getResultList();
     }
 

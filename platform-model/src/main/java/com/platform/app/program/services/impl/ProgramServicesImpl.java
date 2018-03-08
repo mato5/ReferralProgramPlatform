@@ -13,6 +13,7 @@ import com.platform.app.program.exception.ProgramNotFoundException;
 import com.platform.app.program.exception.ProgramServiceException;
 import com.platform.app.program.model.Application;
 import com.platform.app.program.model.Program;
+import com.platform.app.program.repository.ApplicationRepository;
 import com.platform.app.program.repository.ProgramRepository;
 import com.platform.app.program.services.ProgramServices;
 
@@ -36,6 +37,9 @@ public class ProgramServicesImpl implements ProgramServices {
 
     @Inject
     InvitationServices invitationServices;
+
+    @Inject
+    ApplicationRepository applicationRepository;
 
     @Inject
     Validator validator;
@@ -68,6 +72,11 @@ public class ProgramServicesImpl implements ProgramServices {
     @Override
     public Program findById(Long id) {
         return programRepository.findById(id);
+    }
+
+    @Override
+    public Program findByApplication(Application application) {
+        return programRepository.findByApplication(application);
     }
 
     //Todo

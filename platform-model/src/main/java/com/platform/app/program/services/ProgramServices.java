@@ -20,6 +20,8 @@ public interface ProgramServices {
 
     Program findById(Long id);
 
+    Program findByApplication(Application application);
+
     void registerApplication(Application stub, Long programId);
 
     void unregisterApplication(Application app, Long programId);

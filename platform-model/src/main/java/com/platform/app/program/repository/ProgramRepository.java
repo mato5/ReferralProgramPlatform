@@ -3,6 +3,7 @@ package com.platform.app.program.repository;
 import com.platform.app.common.repository.GenericRepository;
 import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.User;
+import com.platform.app.program.model.Application;
 import com.platform.app.program.model.Program;
 
 import javax.ejb.Stateless;
@@ -31,8 +32,19 @@ public class ProgramRepository extends GenericRepository<Program> {
         String query = "select a from Program p join p.admins a where a.id = :aId";
 
         try {
-            return em.createQuery(query)
+            return em.createQuery(query,Program.class)
                     .setParameter("aId", admin.getId()).getResultList();
+        } catch (final NoResultException e) {
+            return null;
+        }
+    }
+
+    public Program findByApplication(Application application){
+        String query = "select a from Program p join p.activeApplications a where a.apiKey = :aId";
+
+        try {
+            return em.createQuery(query,Program.class)
+                    .setParameter("aId", application.getApiKey()).getSingleResult();
         } catch (final NoResultException e) {
             return null;
         }

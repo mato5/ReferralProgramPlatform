@@ -17,7 +17,7 @@ public class Program {
     @Column(unique = true)
     private String name;
     @NotNull
-    @ManyToMany(cascade = CascadeType.ALL)
+    @ManyToMany(cascade = CascadeType.PERSIST)
     private Set<Admin> admins = new HashSet<>();
     @OneToMany
     private Set<Customer> activeCustomers = new HashSet<Customer>();
