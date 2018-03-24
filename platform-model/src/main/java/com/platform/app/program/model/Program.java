@@ -23,7 +23,7 @@ public class Program {
     private Set<Customer> activeCustomers = new HashSet<Customer>();
     @Embedded
     private WaitingList waitingList = new WaitingList();
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.PERSIST)
     private Set<Application> activeApplications = new HashSet<>();
 
 

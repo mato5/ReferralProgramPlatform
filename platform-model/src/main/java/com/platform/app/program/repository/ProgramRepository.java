@@ -50,6 +50,17 @@ public class ProgramRepository extends GenericRepository<Program> {
         }
     }
 
+    public Program findByName(String name){
+        String query = "select p from Program p where p.name = :name";
+
+        try {
+            return em.createQuery(query,Program.class)
+                    .setParameter("name", name).getSingleResult();
+        } catch (final NoResultException e) {
+            return null;
+        }
+    }
+
     public boolean alreadyExists(Program program) {
         return alreadyExists("name", program.getName(), program.getId());
     }
