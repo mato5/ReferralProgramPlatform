@@ -32,13 +32,7 @@ public class PlatformUserServicesImpl implements PlatformUserServices {
     PlatformUserRepository userRepository;
 
     @Inject
-    AdminRepository adminRepository;
-
-    @Inject
     CustomerRepository customerRepository;
-
-    @Inject
-    ProgramRepository programRepository;
 
     @Inject
     InvitationRepository invitationRepository;
@@ -119,26 +113,6 @@ public class PlatformUserServicesImpl implements PlatformUserServices {
         userRepository.delete(user);
     }
 
-    @Override
-    public void addExistingProgram(Program program, Admin admin) {
-        program = programRepository.findById(program.getId());
-        admin = adminRepository.findById(admin.getId());
-        if (program == null) {
-            throw new ProgramNotFoundException();
-        }
-        if (admin == null) {
-            throw new UserNotFoundException();
-        }
-        if (admin.getPrograms().contains(program)) {
-            admin.getPrograms().remove(program);
-            program.setAdmin(admin);
-            admin.getPrograms().add(program);
-        } else {
-            program.setAdmin(admin);
-            admin.getPrograms().add(program);
-        }
-        adminRepository.update(admin);
-    }
 
     @Override
     public void setInvitationsLeft(List<Long> customerIds, Integer invitationsLeft) {

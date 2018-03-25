@@ -21,6 +21,10 @@ public interface ProgramServices {
 
     void removeAdmin(Long adminId, Long programId);
 
+    void addCustomer(Long customerId, Long programId);
+
+    void removeCustomer(Long customerId, Long programId);
+
     List<Program> findByAdmin(Admin admin);
 
     List<Program> findAll(String orderfield);
@@ -36,6 +40,8 @@ public interface ProgramServices {
     void unregisterApplication(UUID apiKey, Long programId);
 
     Program registerOnWaitingList(Long programId, Long customerId);
+
+    Program unregisterOnWaitingList(Long programId, Long customerId);
 
     SortedMap<Date, Customer> getCustomersOnWaitingList(Long programId);
 

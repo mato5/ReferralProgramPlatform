@@ -5,6 +5,7 @@ import com.platform.app.invitation.model.Invitation;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import java.util.List;
 
@@ -55,7 +56,13 @@ public class InvitationRepository extends GenericRepository<Invitation> {
     }
 
     public boolean alreadyInvited(Long customerId) {
-        return em.createQuery("Select e from Invitation e where e.toUserId" + " = :propertyValue")
-                .setParameter("propertyValue", customerId).getResultList().size() > 0;
+        Invitation inv;
+        try {
+            inv = em.createQuery("Select e from Invitation e where e.toUserId" + " = :propertyValue", Invitation.class)
+                    .setParameter("propertyValue", customerId).getSingleResult();
+        } catch (NoResultException e) {
+            return false;
+        }
+        return inv != null && inv.getActivated() == null;
     }
 }

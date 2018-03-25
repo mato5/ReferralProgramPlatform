@@ -107,6 +107,40 @@ public class ProgramServicesImpl implements ProgramServices {
         programRepository.update(program);
     }
 
+    @Override
+    public void addCustomer(Long customerId, Long programId){
+        Program program = programRepository.findById(programId);
+        Customer customer = customerRepository.findById(customerId);
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        if (customer == null) {
+            throw new UserNotFoundException();
+        }
+        if (program.getActiveCustomers().contains(customer)) {
+            throw new ProgramServiceException("This program already contains the specified customer");
+        }
+        program.addActiveCustomers(customer);
+        programRepository.update(program);
+    }
+
+    @Override
+    public void removeCustomer(Long customerId, Long programId){
+        Program program = programRepository.findById(programId);
+        Customer customer = customerRepository.findById(customerId);
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        if (customer == null) {
+            throw new UserNotFoundException();
+        }
+        if (!program.getActiveCustomers().contains(customer)) {
+            throw new ProgramServiceException("This program does not contain the specified customer");
+        }
+        program.removeActiveCustomers(customer);
+        programRepository.update(program);
+    }
+
 
     @Override
     public List<Program> findByAdmin(Admin admin) {
@@ -183,6 +217,24 @@ public class ProgramServicesImpl implements ProgramServices {
             throw new ProgramServiceException("This waiting list already contains the specified customer.");
         }
         program.getWaitingList().subscribe(customerId);
+        programRepository.update(program);
+        return program;
+    }
+
+    @Override
+    public Program unregisterOnWaitingList(Long programId, Long customerId){
+        Program program = programRepository.findById(programId);
+        Customer customer = customerRepository.findById(customerId);
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        if (customer == null) {
+            throw new UserNotFoundException();
+        }
+        if (!program.getWaitingList().getOrderedIds().contains(customerId)) {
+            throw new ProgramServiceException("This waiting list does not contains the specified customer.");
+        }
+        program.getWaitingList().unsubscribe(customerId);
         programRepository.update(program);
         return program;
     }

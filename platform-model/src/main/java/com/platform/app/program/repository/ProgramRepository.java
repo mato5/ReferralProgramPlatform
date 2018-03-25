@@ -61,6 +61,17 @@ public class ProgramRepository extends GenericRepository<Program> {
         }
     }
 
+    public Program findByActiveUser(Long userId){
+        String query = "select a from Program p join p.activeCustomers a where a.id = :aId";
+
+        try {
+            return em.createQuery(query,Program.class)
+                    .setParameter("aId", userId).getSingleResult();
+        } catch (final NoResultException e) {
+            return null;
+        }
+    }
+
     public boolean alreadyExists(Program program) {
         return alreadyExists("name", program.getName(), program.getId());
     }

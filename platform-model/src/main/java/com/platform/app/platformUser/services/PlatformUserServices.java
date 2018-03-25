@@ -26,7 +26,5 @@ public interface PlatformUserServices {
 
     void delete(User user);
 
-    void addExistingProgram(Program program, Admin admin);
-
     void setInvitationsLeft(List<Long> customerIds, Integer invitationsLeft);
 }
