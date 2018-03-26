@@ -45,9 +45,9 @@ public class ProgramRepositoryUTest extends TestBaseRepository {
         assertThat(addedId, is(notNullValue()));
 
         final Program program = programRepository.findById(addedId);
-        assertThat(program.getActiveApplication(), is(equalTo(designPatterns.getActiveApplication())));
+        assertThat(program.getActiveApplications().size(), is(equalTo(designPatterns.getActiveApplications())));
         assertThat(program.getActiveCustomers(), is(equalTo(designPatterns.getActiveCustomers())));
-        assertThat(program.getAdmin(), is(equalTo(designPatterns.getAdmin())));
+        assertThat(program.getAdmins(), is(equalTo(designPatterns.getAdmins())));
         assertThat(program.getName(), is(equalTo(designPatterns.getName())));
         assertThat(program.getWaitingList().getList().size(), is(equalTo(0)));
     }
