@@ -13,6 +13,7 @@ import java.util.List;
 import static com.platform.app.commontests.platformUser.UserForTestsRepository.admin;
 import static com.platform.app.commontests.platformUser.UserForTestsRepository.johnDoe;
 import static com.platform.app.commontests.platformUser.UserForTestsRepository.mary;
+import static com.platform.app.commontests.program.ApplicationForTestsRepository.app1;
 import static com.platform.app.commontests.utils.TestRepositoryUtils.findByPropertyNameAndValue;
 
 @Ignore
@@ -30,10 +31,8 @@ public final class ProgramForTestsRepository {
         final Program program = new Program();
         program.setName("program1");
         program.addAdmin(admin());
-        Application stub = new Application();
-        stub.setDescription("application of program1");
-        program.addApplication(stub);
-        program.getWaitingList().subscribe(johnDoe().getId());
+        program.addApplication(app1());
+        program.getWaitingList().subscribe(1L);
         program.addActiveCustomers(mary());
 
         return program;
@@ -62,23 +61,27 @@ public final class ProgramForTestsRepository {
     }
 
     public static Program normalizeDependencies(final Program program, final EntityManager em) {
-        //Admin
-        final Admin associatedAdmin = findByPropertyNameAndValue(em, Admin.class, "email", "admin@domain.com");
-        program.addAdmin(associatedAdmin);
-        System.out.println("Admin:");
-        System.out.println(associatedAdmin);
+
+        //Admins
+        for (Admin item : program.getAdmins()) {
+            Admin associatedAdmin = findByPropertyNameAndValue(em, Admin.class, "email", item.getEmail());
+            item.setId(associatedAdmin.getId());
+        }
 
         //Active customers
         for (Customer item : program.getActiveCustomers()) {
             Customer associatedActiveCustomer = findByPropertyNameAndValue(em, Customer.class, "email", item.getEmail());
             item.setId(associatedActiveCustomer.getId());
-            System.out.println("Active:");
-            System.out.println(associatedActiveCustomer);
-            System.out.println(item);
+        }
+
+        //Aplications
+        for(Application item: program.getActiveApplications()) {
+            Application app = findByPropertyNameAndValue(em, Application.class, "URL", item.getURL());
+            item.setApiKey(app.getApiKey());
         }
 
         /*//Waiting list
-        for (Customer item : program.getWaitingList()) {
+        for (Long item : program.getWaitingList().getOrderedIds()) {
             Customer associatedActiveCustomer = findByPropertyNameAndValue(em, Customer.class, "email", item.getEmail());
             item.setId(associatedActiveCustomer.getId());
             System.out.println("Waiting lis:");

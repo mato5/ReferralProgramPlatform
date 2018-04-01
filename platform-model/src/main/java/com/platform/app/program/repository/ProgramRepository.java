@@ -29,44 +29,44 @@ public class ProgramRepository extends GenericRepository<Program> {
     }
 
     public List<Program> findByAdmin(Admin admin) {
-        String query = "select a from Program p join p.admins a where a.id = :aId";
+        String query = "select p from Program p join p.admins a where a.id = :aId";
 
         try {
-            return em.createQuery(query,Program.class)
+            return em.createQuery(query, Program.class)
                     .setParameter("aId", admin.getId()).getResultList();
         } catch (final NoResultException e) {
             return null;
         }
     }
 
-    public Program findByApplication(Application application){
-        String query = "select a from Program p join p.activeApplications a where a.apiKey = :aId";
+    public Program findByApplication(Application application) {
+        String query = "select p from Program p join p.activeApplications a where a.apiKey = :aId";
 
         try {
-            return em.createQuery(query,Program.class)
+            return em.createQuery(query, Program.class)
                     .setParameter("aId", application.getApiKey()).getSingleResult();
         } catch (final NoResultException e) {
             return null;
         }
     }
 
-    public Program findByName(String name){
+    public Program findByName(String name) {
         String query = "select p from Program p where p.name = :name";
 
         try {
-            return em.createQuery(query,Program.class)
+            return em.createQuery(query, Program.class)
                     .setParameter("name", name).getSingleResult();
         } catch (final NoResultException e) {
             return null;
         }
     }
 
-    public Program findByActiveUser(Long userId){
-        String query = "select a from Program p join p.activeCustomers a where a.id = :aId";
+    public Program findByActiveUser(User user) {
+        String query = "select p from Program p join p.activeCustomers a where a.id = :aId";
 
         try {
-            return em.createQuery(query,Program.class)
-                    .setParameter("aId", userId).getSingleResult();
+            return em.createQuery(query, Program.class)
+                    .setParameter("aId", user.getId()).getSingleResult();
         } catch (final NoResultException e) {
             return null;
         }

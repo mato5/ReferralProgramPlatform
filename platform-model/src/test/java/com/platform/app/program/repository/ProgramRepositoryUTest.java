@@ -1,10 +1,14 @@
 package com.platform.app.program.repository;
 
 import static com.platform.app.commontests.platformUser.UserForTestsRepository.*;
+import static com.platform.app.commontests.program.ApplicationForTestsRepository.allApps;
+import static com.platform.app.commontests.program.ApplicationForTestsRepository.app2;
 import static com.platform.app.commontests.program.ProgramForTestsRepository.*;
+
 import com.platform.app.common.model.PaginatedData;
 import com.platform.app.common.model.filter.PaginationData;
 import com.platform.app.commontests.utils.TestBaseRepository;
+import com.platform.app.platformUser.model.Admin;
 import com.platform.app.program.model.Program;
 import org.junit.After;
 import org.junit.Before;
@@ -28,7 +32,7 @@ public class ProgramRepositoryUTest extends TestBaseRepository {
         programRepository = new ProgramRepository();
         programRepository.em = em;
 
-        loadCustomersAndAdmins();
+        persistDependencies();
     }
 
     @After
@@ -38,18 +42,18 @@ public class ProgramRepositoryUTest extends TestBaseRepository {
 
     @Test
     public void addProgramAndFindIt() {
-        final Program designPatterns = normalizeDependencies(program1(), em);
+        final Program toBeAdded = normalizeDependencies(program1(), em);
         final Long addedId = dbCommandExecutor.executeCommand(() -> {
-            return programRepository.add(designPatterns).getId();
+            return programRepository.add(toBeAdded).getId();
         });
         assertThat(addedId, is(notNullValue()));
 
         final Program program = programRepository.findById(addedId);
-        assertThat(program.getActiveApplications().size(), is(equalTo(designPatterns.getActiveApplications())));
-        assertThat(program.getActiveCustomers(), is(equalTo(designPatterns.getActiveCustomers())));
-        assertThat(program.getAdmins(), is(equalTo(designPatterns.getAdmins())));
-        assertThat(program.getName(), is(equalTo(designPatterns.getName())));
-        assertThat(program.getWaitingList().getList().size(), is(equalTo(0)));
+        assertThat(program.getActiveApplications(), is(equalTo(toBeAdded.getActiveApplications())));
+        assertThat(program.getActiveCustomers(), is(equalTo(toBeAdded.getActiveCustomers())));
+        assertThat(program.getAdmins(), is(equalTo(toBeAdded.getAdmins())));
+        assertThat(program.getName(), is(equalTo(toBeAdded.getName())));
+        assertThat(program.getWaitingList().getList().size(), is(equalTo(1)));
     }
 
     @Test
@@ -60,9 +64,9 @@ public class ProgramRepositoryUTest extends TestBaseRepository {
 
     @Test
     public void updateProgram() {
-        final Program designPatterns = normalizeDependencies(program1(), em);
+        final Program toBeUpdated = normalizeDependencies(program1(), em);
         final Long addedId = dbCommandExecutor.executeCommand(() -> {
-            return programRepository.add(designPatterns).getId();
+            return programRepository.add(toBeUpdated).getId();
         });
 
         assertThat(addedId, is(notNullValue()));
@@ -90,7 +94,74 @@ public class ProgramRepositoryUTest extends TestBaseRepository {
         assertThat(programRepository.existsById(999l), is(equalTo(false)));
     }
 
-    /*@Test
+    @Test
+    public void findProgramByName() {
+        loadAllPrograms();
+        Program temp = programRepository.findByName("program1");
+        assertThat(temp.getName(), is(equalTo(program1().getName())));
+    }
+
+    @Test
+    public void findProgramByWrongName() {
+        loadAllPrograms();
+        Program temp = programRepository.findByName("wrong program name");
+        assertThat(temp, is(nullValue()));
+    }
+
+    @Test
+    public void findProgramByAdmin() {
+        loadAllPrograms();
+        Program temp = programRepository.findByName("program1");
+        List<Program> programs = programRepository.findByAdmin(temp.getAdmins().iterator().next());
+        assertThat(programs.size(), is(equalTo(allPrograms().size())));
+        for (Program p : programs) {
+            assertThat(p.getName(), anyOf(is(program1().getName()), is(program2().getName())));
+        }
+    }
+
+    @Test
+    public void findProgramByApplication() {
+        loadAllPrograms();
+        Program temp = programRepository.findByName("program1");
+        Program program = programRepository.findByApplication(temp.getActiveApplications().iterator().next());
+        assertThat(program.getName(), is(equalTo("program1")));
+    }
+
+    @Test
+    public void findProgramByWrongApplication() {
+        loadAllPrograms();
+        Program program = programRepository.findByApplication(app2());
+        assertThat(program, is(nullValue()));
+    }
+
+    @Test
+    public void findProgramByActiveUser() {
+        loadAllPrograms();
+        Program temp = programRepository.findByName("program1");
+        Program program = programRepository.findByActiveUser(temp.getActiveCustomers().iterator().next());
+        assertThat(program.getName(), is(equalTo("program1")));
+    }
+
+    @Test
+    public void findProgramByWrongUser() {
+        loadAllPrograms();
+        Program program = programRepository.findByActiveUser(mary());
+        assertThat(program, is(nullValue()));
+    }
+
+    @Test
+    public void deleteExistingProgram() {
+        loadAllPrograms();
+        assertThat(programRepository.findAll("name").size(), is(equalTo(2)));
+        dbCommandExecutor.executeCommand(() -> {
+            programRepository.delete(programRepository.findByName(program1().getName()));
+            return null;
+        });
+        assertThat(programRepository.findAll("name").size(), is(equalTo(1)));
+    }
+
+    /*
+    @Test
     public void findByFilterNoFilter() {
         loadProgramsFindByFilter();
 
@@ -143,16 +214,9 @@ public class ProgramRepositoryUTest extends TestBaseRepository {
         assertThat(result.getNumberOfRows(), is(equalTo(1)));
         assertThat(result.getRows().size(), is(equalTo(1)));
         assertThat(result.getRow(0).getTitle(), is(equalTo(designPatterns().getTitle())));
-    }
+    }*/
 
-    private void loadProgramsFindByFilter() {
-        dbCommandExecutor.executeCommand(() -> {
-            allPrograms().forEach((program) -> programRepository.add(normalizeDependencies(program, em)));
-            return null;
-        });
-    }
-
-    private void assertAuthors(final Book book, final Author... expectedAuthors) {
+    /*private void assertAuthors(final Book book, final Author... expectedAuthors) {
         final List<Author> authors = book.getAuthors();
         assertThat(authors.size(), is(equalTo(expectedAuthors.length)));
 
@@ -163,10 +227,18 @@ public class ProgramRepositoryUTest extends TestBaseRepository {
         }
     }*/
 
-    private void loadCustomersAndAdmins() {
+    private void loadAllPrograms() {
+        dbCommandExecutor.executeCommand(() -> {
+            allPrograms().forEach((program) -> programRepository.add(normalizeDependencies(program, em)));
+            return null;
+        });
+    }
+
+    private void persistDependencies() {
         dbCommandExecutor.executeCommand(() -> {
             allCustomers().forEach(em::persist);
             allAdmins().forEach(em::persist);
+            allApps().forEach(em::persist);
             return null;
         });
     }

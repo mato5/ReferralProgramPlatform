@@ -16,14 +16,16 @@ public class Program {
     @NotNull
     @Column(unique = true)
     private String name;
-    @NotNull
-    @ManyToMany(cascade = CascadeType.PERSIST)
+    //@NotNull
+    @ManyToMany(cascade = {CascadeType.MERGE})
+    @JoinTable(name = "PROGRAM_ADMIN", joinColumns = @JoinColumn(name = "PROGRAM_ID"),
+            inverseJoinColumns = @JoinColumn(name = "ADMIN_ID"))
     private Set<Admin> admins = new HashSet<>();
     @OneToMany
     private Set<Customer> activeCustomers = new HashSet<Customer>();
     @Embedded
     private WaitingList waitingList = new WaitingList();
-    @OneToMany(cascade = CascadeType.PERSIST)
+    @OneToMany(cascade = CascadeType.MERGE)
     private Set<Application> activeApplications = new HashSet<>();
 
 
@@ -95,11 +97,11 @@ public class Program {
         this.admins = admins;
     }
 
-    public void addAdmin(Admin admin){
+    public void addAdmin(Admin admin) {
         this.admins.add(admin);
     }
 
-    public void removeAdmin(Admin admin){
+    public void removeAdmin(Admin admin) {
         this.admins.remove(admin);
     }
 

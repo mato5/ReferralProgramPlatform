@@ -63,7 +63,7 @@ public class InvitationServicesImpl implements InvitationServices {
         if (invitationRepository.alreadyInvited(invited.getId())) {
             throw new InvitationServiceException("This customer has already been invited.");
         }
-        if (programRepository.findByActiveUser(invited.getId()) != null) {
+        if (programRepository.findByActiveUser(invited) != null) {
             throw new InvitationServiceException("This customer is currently active");
         }
         if (programRepository.findById(inv.getProgramId()) == null) {
@@ -140,11 +140,11 @@ public class InvitationServicesImpl implements InvitationServices {
         if (invitedBy == null) {
             throw new InvitationServiceException("The inviter does not exist");
         }
-        Program invitedToProgram = programRepository.findByActiveUser(invited.getId());
+        Program invitedToProgram = programRepository.findByActiveUser(invited);
         if (invitedToProgram == null) {
             throw new InvitationServiceException("The customer has not been invited to a program.");
         }
-        programServices.removeCustomer(invited.getId(),invitedToProgram.getId());
+        programServices.removeCustomer(invited.getId(), invitedToProgram.getId());
         inv.setDeclined(true);
         invitationRepository.update(inv);
     }
