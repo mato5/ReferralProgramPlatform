@@ -55,11 +55,14 @@ public class InvitationRepository extends GenericRepository<Invitation> {
                 .setParameter("propertyValue", inviteeId).getResultList();
     }
 
-    public boolean alreadyInvited(Long customerId) {
+    public boolean alreadyInvited(Long customerId, Long programId) {
         Invitation inv;
         try {
-            inv = em.createQuery("Select e from Invitation e where e.toUserId" + " = :propertyValue", Invitation.class)
-                    .setParameter("propertyValue", customerId).getSingleResult();
+            inv = em.createQuery("Select e from Invitation e where e.toUserId" + " = :propertyValue and e.programId" + " = :progId", Invitation.class)
+                    .setParameter("propertyValue", customerId)
+                    .setParameter("progId", programId)
+                    .getSingleResult();
+
         } catch (NoResultException e) {
             return false;
         }

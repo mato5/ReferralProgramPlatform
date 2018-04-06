@@ -8,6 +8,7 @@ import com.platform.app.invitation.model.Invitation;
 import com.platform.app.invitation.repository.InvitationRepository;
 import com.platform.app.platformUser.exception.UserExistentException;
 import com.platform.app.platformUser.exception.UserNotFoundException;
+import com.platform.app.platformUser.exception.UserServiceException;
 import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
 import com.platform.app.platformUser.model.User;
@@ -76,6 +77,16 @@ public class PlatformUserServicesImpl implements PlatformUserServices {
     }
 
     @Override
+    public void updateEmail(Long id, String newEmail) {
+        User user = userRepository.findById(id);
+        if (userRepository.findByEmail(newEmail) != null) {
+            throw new UserServiceException("This email is already in use");
+        }
+        user.setEmail(newEmail);
+        update(user);
+    }
+
+    @Override
     public User findByEmail(final String email) throws UserNotFoundException {
         final User user = userRepository.findByEmail(email);
         if (user == null) {
@@ -117,7 +128,7 @@ public class PlatformUserServicesImpl implements PlatformUserServices {
     @Override
     public void setInvitationsLeft(List<Long> customerIds, Integer invitationsLeft) {
         List<Customer> customers = customerRepository.findByIdBatch(customerIds);
-        for(Customer item: customers){
+        for (Customer item : customers) {
             item.setInvitationsLeft(invitationsLeft);
             customerRepository.update(item);
         }

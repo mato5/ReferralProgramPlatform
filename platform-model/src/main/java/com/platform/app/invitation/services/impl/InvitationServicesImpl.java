@@ -8,6 +8,7 @@ import com.platform.app.invitation.exception.InvitationServiceException;
 import com.platform.app.invitation.model.Invitation;
 import com.platform.app.invitation.repository.InvitationRepository;
 import com.platform.app.invitation.services.InvitationServices;
+import com.platform.app.platformUser.exception.UserNotFoundException;
 import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
 import com.platform.app.platformUser.model.User;
@@ -15,6 +16,7 @@ import com.platform.app.platformUser.repository.AdminRepository;
 import com.platform.app.platformUser.repository.CustomerRepository;
 import com.platform.app.platformUser.repository.PlatformUserRepository;
 import com.platform.app.platformUser.services.PlatformUserServices;
+import com.platform.app.program.exception.ProgramNotFoundException;
 import com.platform.app.program.model.Program;
 import com.platform.app.program.repository.ProgramRepository;
 import com.platform.app.program.services.ProgramServices;
@@ -54,26 +56,27 @@ public class InvitationServicesImpl implements InvitationServices {
         validateInvitation(inv);
         Customer invited = customerRepository.findById(inv.getToUserId());
         User invitedBy = userRepository.findById(inv.getByUserId());
+        Program invitedTo = programRepository.findById(inv.getProgramId());
         if (invited == null) {
-            throw new InvitationServiceException("The invited customer does not exist");
+            throw new UserNotFoundException();
         }
         if (invitedBy == null) {
-            throw new InvitationServiceException("The inviter does not exist");
+            throw new UserNotFoundException();
         }
-        if (invitationRepository.alreadyInvited(invited.getId())) {
-            throw new InvitationServiceException("This customer has already been invited.");
+        if(invitedTo == null) {
+            throw new ProgramNotFoundException();
         }
-        if (programRepository.findByActiveUser(invited) != null) {
-            throw new InvitationServiceException("This customer is currently active");
+        if (invitationRepository.alreadyInvited(invited.getId(), inv.getProgramId())) {
+            throw new InvitationServiceException("This customer has been already invited to the specified program.");
         }
-        if (programRepository.findById(inv.getProgramId()) == null) {
-            throw new InvitationServiceException("The program the customer has been invited to does not exist.");
+        if (invitedTo.getActiveCustomers().contains(invited)) {
+            throw new InvitationServiceException("This customer is currently participating in this program.");
         }
         Customer invitedByCustomer;
         if (invitedBy.getUserType().equals(User.UserType.CUSTOMER)) {
             invitedByCustomer = customerRepository.findById(invitedBy.getId());
             if (invitedByCustomer.getInvitationsLeft() < 1) {
-                throw new InvitationServiceException("This customer has no invitations left");
+                throw new InvitationServiceException("This customer has no invitations left.");
             }
             invitedByCustomer.setInvitationsLeft(invitedByCustomer.getInvitationsLeft() - 1);
             customerRepository.update(invitedByCustomer);
@@ -140,11 +143,16 @@ public class InvitationServicesImpl implements InvitationServices {
         if (invitedBy == null) {
             throw new InvitationServiceException("The inviter does not exist");
         }
-        Program invitedToProgram = programRepository.findByActiveUser(invited);
-        if (invitedToProgram == null) {
-            throw new InvitationServiceException("The customer has not been invited to a program.");
+        List<Program> invitedToPrograms = programRepository.findByActiveUser(invited);
+        if (invitedToPrograms == null) {
+            throw new InvitationServiceException("The user has not been invited to any program");
         }
-        programServices.removeCustomer(invited.getId(), invitedToProgram.getId());
+        for (Program item : invitedToPrograms) {
+            if (item.getId().equals(inv.getProgramId())) {
+                programServices.removeCustomer(invited.getId(), item.getId());
+                break;
+            }
+        }
         inv.setDeclined(true);
         invitationRepository.update(inv);
     }

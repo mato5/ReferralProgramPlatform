@@ -108,7 +108,7 @@ public class ProgramServicesImpl implements ProgramServices {
     }
 
     @Override
-    public void addCustomer(Long customerId, Long programId){
+    public void addCustomer(Long customerId, Long programId) {
         Program program = programRepository.findById(programId);
         Customer customer = customerRepository.findById(customerId);
         if (program == null) {
@@ -125,7 +125,7 @@ public class ProgramServicesImpl implements ProgramServices {
     }
 
     @Override
-    public void removeCustomer(Long customerId, Long programId){
+    public void removeCustomer(Long customerId, Long programId) {
         Program program = programRepository.findById(programId);
         Customer customer = customerRepository.findById(customerId);
         if (program == null) {
@@ -222,7 +222,7 @@ public class ProgramServicesImpl implements ProgramServices {
     }
 
     @Override
-    public Program unregisterOnWaitingList(Long programId, Long customerId){
+    public Program unregisterOnWaitingList(Long programId, Long customerId) {
         Program program = programRepository.findById(programId);
         Customer customer = customerRepository.findById(customerId);
         if (program == null) {
@@ -232,7 +232,7 @@ public class ProgramServicesImpl implements ProgramServices {
             throw new UserNotFoundException();
         }
         if (!program.getWaitingList().getOrderedIds().contains(customerId)) {
-            throw new ProgramServiceException("This waiting list does not contains the specified customer.");
+            throw new ProgramServiceException("This waiting list does not contain the specified customer.");
         }
         program.getWaitingList().unsubscribe(customerId);
         programRepository.update(program);
@@ -270,7 +270,7 @@ public class ProgramServicesImpl implements ProgramServices {
             throw new ProgramServiceException("This admin does not exist");
         }
         List<Customer> customers = customerRepository.findByIdBatch(userIds);
-        if(customers.size() != userIds.size()){
+        if (customers.size() != userIds.size()) {
             throw new UserNotFoundException();
         }
         for (Customer item : customers) {

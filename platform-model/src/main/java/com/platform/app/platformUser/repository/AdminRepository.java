@@ -35,7 +35,7 @@ public class AdminRepository extends GenericRepository<Admin> {
 
     public Admin findByEmail(final String email) {
         try {
-            return (Admin) em.createQuery("Select e From User e where e.email = :email")
+            return em.createQuery("Select e From User e where e.email = :email", Admin.class)
                     .setParameter("email", email)
                     .getSingleResult();
         } catch (final NoResultException e) {

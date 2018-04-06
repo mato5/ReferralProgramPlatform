@@ -138,15 +138,15 @@ public class ProgramRepositoryUTest extends TestBaseRepository {
     public void findProgramByActiveUser() {
         loadAllPrograms();
         Program temp = programRepository.findByName("program1");
-        Program program = programRepository.findByActiveUser(temp.getActiveCustomers().iterator().next());
-        assertThat(program.getName(), is(equalTo("program1")));
+        List<Program> programs = programRepository.findByActiveUser(temp.getActiveCustomers().iterator().next());
+        assertThat(programs.get(0).getName(), is(equalTo("program1")));
     }
 
     @Test
     public void findProgramByWrongUser() {
         loadAllPrograms();
-        Program program = programRepository.findByActiveUser(mary());
-        assertThat(program, is(nullValue()));
+        List<Program> programs = programRepository.findByActiveUser(mary());
+        assertThat(programs.size(), is(equalTo(0)));
     }
 
     @Test

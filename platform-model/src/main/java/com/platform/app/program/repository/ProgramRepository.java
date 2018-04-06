@@ -31,12 +31,8 @@ public class ProgramRepository extends GenericRepository<Program> {
     public List<Program> findByAdmin(Admin admin) {
         String query = "select p from Program p join p.admins a where a.id = :aId";
 
-        try {
-            return em.createQuery(query, Program.class)
-                    .setParameter("aId", admin.getId()).getResultList();
-        } catch (final NoResultException e) {
-            return null;
-        }
+        return em.createQuery(query, Program.class)
+                .setParameter("aId", admin.getId()).getResultList();
     }
 
     public Program findByApplication(Application application) {
@@ -61,15 +57,12 @@ public class ProgramRepository extends GenericRepository<Program> {
         }
     }
 
-    public Program findByActiveUser(User user) {
+    public List<Program> findByActiveUser(User user) {
         String query = "select p from Program p join p.activeCustomers a where a.id = :aId";
 
-        try {
-            return em.createQuery(query, Program.class)
-                    .setParameter("aId", user.getId()).getSingleResult();
-        } catch (final NoResultException e) {
-            return null;
-        }
+        return em.createQuery(query, Program.class)
+                .setParameter("aId", user.getId()).getResultList();
+
     }
 
     public boolean alreadyExists(Program program) {

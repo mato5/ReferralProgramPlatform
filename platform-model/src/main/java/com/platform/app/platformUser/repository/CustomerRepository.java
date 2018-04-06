@@ -35,7 +35,7 @@ public class CustomerRepository extends GenericRepository<Customer> {
 
     public Customer findByEmail(final String email) {
         try {
-            return (Customer) em.createQuery("Select e From User e where e.email = :email")
+            return em.createQuery("Select e From User e where e.email = :email", Customer.class)
                     .setParameter("email", email)
                     .getSingleResult();
         } catch (final NoResultException e) {

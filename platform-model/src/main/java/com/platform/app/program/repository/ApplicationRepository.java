@@ -50,7 +50,7 @@ public class ApplicationRepository extends GenericRepository<Application> {
         }
     }
 
-    public Application findByInvURL(String invURL){
+    public Application findByInvURL(String invURL) {
         try {
             return em.createQuery("Select e from Application e where e.invitationURL" + " = :propertyValue", Application.class)
                     .setParameter("propertyValue", invURL).getSingleResult();
@@ -60,11 +60,8 @@ public class ApplicationRepository extends GenericRepository<Application> {
     }
 
     public List<Application> findByName(String name) {
-        try {
-            return em.createQuery("Select e from Application e where e.name" + " = :propertyValue", Application.class)
-                    .setParameter("propertyValue", name).getResultList();
-        } catch (NoResultException e) {
-            return null;
-        }
+        return em.createQuery("Select e from Application e where e.name" + " = :propertyValue", Application.class)
+                .setParameter("propertyValue", name).getResultList();
+
     }
 }

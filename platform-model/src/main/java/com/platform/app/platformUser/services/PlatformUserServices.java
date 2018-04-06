@@ -18,6 +18,8 @@ public interface PlatformUserServices {
 
     void updatePassword(Long id, String password);
 
+    void updateEmail(Long id, String newEmail);
+
     User findByEmail(String email) throws UserNotFoundException;
 
     User findByEmailAndPassword(String email, String password);

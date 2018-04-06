@@ -16,12 +16,11 @@ public class Program {
     @NotNull
     @Column(unique = true)
     private String name;
-    //@NotNull
     @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(name = "PROGRAM_ADMIN", joinColumns = @JoinColumn(name = "PROGRAM_ID"),
             inverseJoinColumns = @JoinColumn(name = "ADMIN_ID"))
     private Set<Admin> admins = new HashSet<>();
-    @OneToMany
+    @ManyToMany
     private Set<Customer> activeCustomers = new HashSet<Customer>();
     @Embedded
     private WaitingList waitingList = new WaitingList();

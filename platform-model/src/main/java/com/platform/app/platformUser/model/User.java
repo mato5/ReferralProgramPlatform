@@ -29,7 +29,7 @@ public abstract class User implements Serializable {
     @Email(message = "Invalid email")
     @NotNull
     @Column(unique = true)
-    @Size(max = 70)
+    @Size(min = 3, max = 70)
     private String email;
 
     @NotNull
