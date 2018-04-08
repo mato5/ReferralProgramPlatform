@@ -26,7 +26,6 @@ public class UserForTestsRepository {
         if (user.getUserType() == UserType.CUSTOMER) {
             customer = (Customer) user;
         }
-
         return customer;
     }
 
@@ -39,7 +38,6 @@ public class UserForTestsRepository {
         if (user.getUserType() == UserType.CUSTOMER) {
             customer = (Customer) user;
         }
-        ;
         return customer;
     }
 
@@ -72,6 +70,20 @@ public class UserForTestsRepository {
     public static User userWithIdAndCreatedAt(final User user, final Long id) {
         user.setId(id);
         user.setCreatedAt(DateUtils.getAsDateTime("2015-01-03T22:35:42Z"));
+
+        return user;
+    }
+
+    public static Customer customerWithIdAndCreatedAt(Customer user, Long id) {
+        user.setId(id);
+        user.setCreatedAt(DateUtils.getAsDateTime("2016-01-03T22:35:42Z"));
+
+        return user;
+    }
+
+    public static Admin adminWithIdAndCreatedAt(Admin user, Long id) {
+        user.setId(id);
+        user.setCreatedAt(DateUtils.getAsDateTime("2017-01-03T22:35:42Z"));
 
         return user;
     }

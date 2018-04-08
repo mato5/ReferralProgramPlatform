@@ -37,6 +37,11 @@ public class InvitationForTestsRepository {
         return temp;
     }
 
+    public static Invitation invitationWithId(final Invitation invitation, final Long id) {
+        invitation.setId(id);
+        return invitation;
+    }
+
     public static List<Invitation> allInvs() {
         return Arrays.asList(inv1(), inv2());
     }

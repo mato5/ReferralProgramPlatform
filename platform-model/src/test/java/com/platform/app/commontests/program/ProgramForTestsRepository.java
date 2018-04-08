@@ -51,7 +51,7 @@ public final class ProgramForTestsRepository {
         return program;
     }
 
-    public static Program ProgramWithId(final Program program, final Long id) {
+    public static Program programWithId(final Program program, final Long id) {
         program.setId(id);
         return program;
     }

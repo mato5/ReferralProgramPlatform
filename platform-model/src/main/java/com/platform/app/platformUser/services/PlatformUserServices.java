@@ -7,8 +7,10 @@ import com.platform.app.platformUser.model.User;
 import com.platform.app.platformUser.model.filter.UserFilter;
 import com.platform.app.program.model.Program;
 
+import javax.ejb.Local;
 import java.util.List;
 
+@Local
 public interface PlatformUserServices {
     User add(User user);
 

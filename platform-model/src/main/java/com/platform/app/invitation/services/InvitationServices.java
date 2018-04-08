@@ -3,8 +3,10 @@ package com.platform.app.invitation.services;
 import com.platform.app.geoIP.model.GeoIP;
 import com.platform.app.invitation.model.Invitation;
 
+import javax.ejb.Local;
 import java.util.List;
 
+@Local
 public interface InvitationServices {
 
     Invitation send(Invitation inv);

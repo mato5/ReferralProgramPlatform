@@ -109,13 +109,12 @@ public class Program {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Program program = (Program) o;
-        return Objects.equals(getId(), program.getId()) &&
-                Objects.equals(getName(), program.getName());
+        return Objects.equals(name, program.name);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(getId(), getName());
+        return Objects.hash(name);
     }
 }

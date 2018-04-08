@@ -21,6 +21,8 @@ import com.platform.app.program.model.Program;
 import com.platform.app.program.repository.ProgramRepository;
 import com.platform.app.program.services.ProgramServices;
 
+import javax.annotation.Resource;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.Validator;
@@ -63,7 +65,7 @@ public class InvitationServicesImpl implements InvitationServices {
         if (invitedBy == null) {
             throw new UserNotFoundException();
         }
-        if(invitedTo == null) {
+        if (invitedTo == null) {
             throw new ProgramNotFoundException();
         }
         if (invitationRepository.alreadyInvited(invited.getId(), inv.getProgramId())) {
@@ -104,6 +106,9 @@ public class InvitationServicesImpl implements InvitationServices {
         inv = invitationRepository.findById(inv.getId());
         if (inv == null) {
             throw new InvitationServiceException("This invitation does not exist");
+        }
+        if (geoLocation == null) {
+            throw new InvitationServiceException("The geoLocation does not exist");
         }
         if (inv.getActivated() != null) {
             throw new InvitationServiceException("This invitation has already been accepted");

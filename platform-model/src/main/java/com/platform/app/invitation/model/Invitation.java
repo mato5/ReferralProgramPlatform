@@ -98,14 +98,30 @@ public class Invitation {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Invitation that = (Invitation) o;
-        return Objects.equals(getByUserId(), that.getByUserId()) &&
-                Objects.equals(getToUserId(), that.getToUserId()) &&
-                Objects.equals(getSent(), that.getSent());
+        return declined == that.declined &&
+                Objects.equals(byUserId, that.byUserId) &&
+                Objects.equals(toUserId, that.toUserId) &&
+                Objects.equals(programId, that.programId) &&
+                Objects.equals(activatedLocation, that.activatedLocation);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(getByUserId(), getToUserId(), getSent());
+        return Objects.hash(byUserId, toUserId, programId, declined, activatedLocation);
+    }
+
+    @Override
+    public String toString() {
+        return "Invitation{" +
+                "id=" + id +
+                ", byUserId=" + byUserId +
+                ", toUserId=" + toUserId +
+                ", programId=" + programId +
+                ", declined=" + declined +
+                ", activated=" + activated +
+                ", sent=" + sent +
+                ", activatedLocation=" + activatedLocation +
+                '}';
     }
 }

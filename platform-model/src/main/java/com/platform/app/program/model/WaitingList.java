@@ -46,4 +46,5 @@ public class WaitingList {
             list.remove(toBeRemoved);
         }
     }
+
 }
