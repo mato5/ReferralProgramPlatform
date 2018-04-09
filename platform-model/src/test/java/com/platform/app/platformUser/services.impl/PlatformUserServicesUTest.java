@@ -1,8 +1,7 @@
 package com.platform.app.platformUser.services.impl;
 
 import static com.platform.app.commontests.platformUser.UserArgumentMatcher.userEq;
-import static com.platform.app.commontests.platformUser.UserForTestsRepository.userWithEncryptedPassword;
-import static com.platform.app.commontests.platformUser.UserForTestsRepository.userWithIdAndCreatedAt;
+import static com.platform.app.commontests.platformUser.UserForTestsRepository.*;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.mockito.Mockito.*;
@@ -13,8 +12,10 @@ import com.platform.app.common.utils.PasswordUtils;
 import com.platform.app.platformUser.exception.UserExistentException;
 import com.platform.app.platformUser.exception.UserNotFoundException;
 import com.platform.app.platformUser.exception.UserServiceException;
+import com.platform.app.platformUser.model.Customer;
 import com.platform.app.platformUser.model.User;
 import com.platform.app.platformUser.model.filter.UserFilter;
+import com.platform.app.platformUser.repository.CustomerRepository;
 import com.platform.app.platformUser.repository.PlatformUserRepository;
 import com.platform.app.platformUser.services.PlatformUserServices;
 import org.junit.Before;
@@ -26,8 +27,7 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import java.util.Arrays;
 import java.util.Collections;
-
-import static com.platform.app.commontests.platformUser.UserForTestsRepository.johnDoe;
+import java.util.List;
 
 public class PlatformUserServicesUTest {
     private Validator validator;
@@ -35,6 +35,9 @@ public class PlatformUserServicesUTest {
 
     @Mock
     private PlatformUserRepository userRepository;
+
+    @Mock
+    private CustomerRepository customerRepository;
 
     @Before
     public void initTestCase() {
@@ -44,6 +47,7 @@ public class PlatformUserServicesUTest {
 
         userServices = new PlatformUserServicesImpl();
         ((PlatformUserServicesImpl) userServices).userRepository = userRepository;
+        ((PlatformUserServicesImpl) userServices).customerRepository = customerRepository;
         ((PlatformUserServicesImpl) userServices).validator = validator;
     }
 
@@ -240,10 +244,15 @@ public class PlatformUserServicesUTest {
         assertThat(usersReturned.getRow(0).getName(), is(equalTo(johnDoe().getName())));
     }
 
-    //TODO
     @Test
     public void customerSetInvitationsLeft() {
-
+        List<Long> ids = Arrays.asList(1L, 2L);
+        List<Customer> customers = Arrays.asList(customerWithIdAndCreatedAt(johnDoe(), 1L), customerWithIdAndCreatedAt(mary(), 2L));
+        when(customerRepository.findByIdBatch(ids)).thenReturn(customers);
+        userServices.setInvitationsLeft(ids, 0);
+        for (Customer item : customers) {
+            verify(customerRepository).update(eq(item));
+        }
     }
 
     @Test

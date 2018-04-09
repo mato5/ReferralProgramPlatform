@@ -31,7 +31,7 @@ public final class ApplicationForTestsRepository {
         return app;
     }
 
-    public static Application AppWithId(final Application application, final UUID id) {
+    public static Application appWithId(final Application application, final UUID id) {
         application.setApiKey(id);
         return application;
     }

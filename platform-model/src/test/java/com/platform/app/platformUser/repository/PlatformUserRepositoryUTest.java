@@ -10,6 +10,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+
 import static com.platform.app.commontests.platformUser.UserForTestsRepository.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -48,6 +53,29 @@ public class PlatformUserRepositoryUTest extends TestBaseRepository {
     public void findUserByIdNotFound() {
         final User user = platformUserRepository.findById(999L);
         assertThat(user, is(nullValue()));
+    }
+
+    @Test
+    public void findByIdBatch() {
+        List<Long> ids = new ArrayList<>();
+        for (User item : allUsers()) {
+            Long userAddedId = dbCommandExecutor.executeCommand(() -> {
+                return platformUserRepository.add(item).getId();
+            });
+            ids.add(userAddedId);
+        }
+        List<User> users = dbCommandExecutor.executeCommand(() -> {
+            return platformUserRepository.findByIdBatch(ids);
+        });
+
+        for (User item : users) {
+            for (User another : allUsers()) {
+                if (item.getEmail().equals(another.getEmail())) {
+                    assertUser(item, another);
+                }
+            }
+        }
+
     }
 
     @Test
@@ -174,7 +202,7 @@ public class PlatformUserRepositoryUTest extends TestBaseRepository {
             return null;
         });
 
-        assertThat(platformUserRepository.findAll("id").size(),is(equalTo(0)));
+        assertThat(platformUserRepository.findAll("id").size(), is(equalTo(0)));
     }
 
 
@@ -192,6 +220,18 @@ public class PlatformUserRepositoryUTest extends TestBaseRepository {
         assertThat(actualUser.getCreatedAt(), is(notNullValue()));
         assertThat(actualUser.getPassword(), is(expectedUser.getPassword()));
         assertThat(actualUser.getUserType(), is(equalTo(expectedUserType)));
+    }
+
+    private void assertUser(final User actualUser, final User expectedUser) {
+        assertThat(actualUser.getName(), is(equalTo(expectedUser.getName())));
+        assertThat(actualUser.getEmail(), is(equalTo(expectedUser.getEmail())));
+        assertThat(listEqualsIgnoreOrder(actualUser.getRoles(), expectedUser.getRoles()), is(equalTo(true)));
+        assertThat(actualUser.getCreatedAt(), is(notNullValue()));
+        assertThat(actualUser.getPassword(), is(expectedUser.getPassword()));
+    }
+
+    private <T> boolean listEqualsIgnoreOrder(List<T> list1, List<T> list2) {
+        return new HashSet<>(list1).equals(new HashSet<>(list2));
     }
 
 }
