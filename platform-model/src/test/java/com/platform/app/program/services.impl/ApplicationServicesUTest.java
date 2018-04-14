@@ -25,6 +25,7 @@ import static org.mockito.Mockito.*;
 
 
 public class ApplicationServicesUTest {
+
     private Validator validator;
     private ApplicationServices applicationServices;
 
@@ -40,6 +41,13 @@ public class ApplicationServicesUTest {
         applicationServices = new ApplicationServicesImpl();
         ((ApplicationServicesImpl) applicationServices).applicationRepository = applicationRepository;
         ((ApplicationServicesImpl) applicationServices).validator = validator;
+    }
+
+    @Test
+    public void addAppCorrect() {
+        Application app = app1();
+        applicationServices.create(app);
+        verify(applicationRepository).add(app);
     }
 
     @Test

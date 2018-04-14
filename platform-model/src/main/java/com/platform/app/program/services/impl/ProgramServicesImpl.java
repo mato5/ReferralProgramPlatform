@@ -21,6 +21,7 @@ import com.platform.app.program.services.ProgramServices;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.Validator;
+import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -103,6 +104,9 @@ public class ProgramServicesImpl implements ProgramServices {
         if (!program.getAdmins().contains(admin)) {
             throw new ProgramServiceException("This program does not contain the specified admin");
         }
+        if (program.getAdmins().size() == 1) {
+            throw new ProgramServiceException("The program will have no admins left");
+        }
         program.removeAdmin(admin);
         programRepository.update(program);
     }
@@ -119,6 +123,9 @@ public class ProgramServicesImpl implements ProgramServices {
         }
         if (program.getActiveCustomers().contains(customer)) {
             throw new ProgramServiceException("This program already contains the specified customer");
+        }
+        if (program.getWaitingList().getOrderedIds().contains(customerId)) {
+            program.getWaitingList().unsubscribe(customerId);
         }
         program.addActiveCustomers(customer);
         programRepository.update(program);
@@ -240,13 +247,13 @@ public class ProgramServicesImpl implements ProgramServices {
     }
 
     @Override
-    public SortedMap<Date, Customer> getCustomersOnWaitingList(Long programId) {
+    public SortedMap<Instant, Customer> getCustomersOnWaitingList(Long programId) {
         Program program = programRepository.findById(programId);
         if (program == null) {
             throw new ProgramNotFoundException();
         }
-        SortedMap<Date, Customer> result = new TreeMap<>();
-        for (Map.Entry<Date, Long> entry : program.getWaitingList().getList().entrySet()) {
+        SortedMap<Instant, Customer> result = new TreeMap<>();
+        for (Map.Entry<Instant, Long> entry : program.getWaitingList().getList().entrySet()) {
             Customer c = customerRepository.findById(entry.getValue());
             if (c != null) {
                 result.put(entry.getKey(), c);
@@ -266,8 +273,12 @@ public class ProgramServicesImpl implements ProgramServices {
         if (!idsOnTheWaitingList.containsAll(userIds)) {
             throw new ProgramServiceException("Inviting from the waiting list contains incorrect user IDs");
         }
-        if (adminRepository.findById(adminId) == null) {
-            throw new ProgramServiceException("This admin does not exist");
+        Admin admin = adminRepository.findById(adminId);
+        if (admin == null) {
+            throw new UserNotFoundException();
+        }
+        if (!program.getAdmins().contains(admin)) {
+            throw new ProgramServiceException("This program is not managed by the provided admin account");
         }
         List<Customer> customers = customerRepository.findByIdBatch(userIds);
         if (customers.size() != userIds.size()) {
@@ -279,6 +290,7 @@ public class ProgramServicesImpl implements ProgramServices {
         }
         List<String> emails = customers.stream().map(Customer::getEmail).collect(Collectors.toList());
         invitationServices.sendInBatch(adminId, programId, emails);
+        idsOnTheWaitingList.forEach(x -> unregisterOnWaitingList(programId, x));
     }
 
     private void validateProgram(Program program) throws FieldNotValidException, ProgramExistentException {

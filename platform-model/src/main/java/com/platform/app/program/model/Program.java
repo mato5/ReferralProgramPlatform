@@ -5,6 +5,7 @@ import com.platform.app.platformUser.model.Customer;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.util.*;
 
 @Entity
@@ -16,6 +17,7 @@ public class Program {
     @NotNull
     @Column(unique = true)
     private String name;
+    @Size(min = 1)
     @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(name = "PROGRAM_ADMIN", joinColumns = @JoinColumn(name = "PROGRAM_ID"),
             inverseJoinColumns = @JoinColumn(name = "ADMIN_ID"))
@@ -73,7 +75,9 @@ public class Program {
     }
 
     public void removeApplication(Application app) {
-        this.activeApplications.remove(app);
+        if (this.activeApplications.contains(app)) {
+            this.activeApplications.remove(app);
+        }
     }
 
     public void addActiveCustomers(Customer customer) {
