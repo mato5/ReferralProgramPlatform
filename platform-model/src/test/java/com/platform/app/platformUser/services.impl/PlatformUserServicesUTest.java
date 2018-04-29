@@ -244,16 +244,6 @@ public class PlatformUserServicesUTest {
         assertThat(usersReturned.getRow(0).getName(), is(equalTo(johnDoe().getName())));
     }
 
-    @Test
-    public void customerSetInvitationsLeft() {
-        List<Long> ids = Arrays.asList(1L, 2L);
-        List<Customer> customers = Arrays.asList(customerWithIdAndCreatedAt(johnDoe(), 1L), customerWithIdAndCreatedAt(mary(), 2L));
-        when(customerRepository.findByIdBatch(ids)).thenReturn(customers);
-        userServices.setInvitationsLeft(ids, 0);
-        for (Customer item : customers) {
-            verify(customerRepository).update(eq(item));
-        }
-    }
 
     @Test
     public void updateUserCorrectEmail() {

@@ -21,6 +21,9 @@ public class Invitation {
     private boolean declined;
     private LocalDateTime activated;
     private LocalDateTime sent;
+    @NotNull
+    private Integer invitationsLeft;
+
     @Embedded
     private GeoIP activatedLocation;
 
@@ -69,6 +72,14 @@ public class Invitation {
         this.toUserId = toUserId;
     }
 
+    public Integer getInvitationsLeft() {
+        return invitationsLeft;
+    }
+
+    public void setInvitationsLeft(Integer invitationsLeft) {
+        this.invitationsLeft = invitationsLeft;
+    }
+
     public LocalDateTime getActivated() {
         return activated;
     }
@@ -98,17 +109,15 @@ public class Invitation {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Invitation that = (Invitation) o;
-        return declined == that.declined &&
-                Objects.equals(byUserId, that.byUserId) &&
-                Objects.equals(toUserId, that.toUserId) &&
-                Objects.equals(programId, that.programId) &&
-                Objects.equals(activatedLocation, that.activatedLocation);
+        return Objects.equals(getByUserId(), that.getByUserId()) &&
+                Objects.equals(getToUserId(), that.getToUserId()) &&
+                Objects.equals(getProgramId(), that.getProgramId());
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(byUserId, toUserId, programId, declined, activatedLocation);
+        return Objects.hash(getByUserId(), getToUserId(), getProgramId());
     }
 
     @Override

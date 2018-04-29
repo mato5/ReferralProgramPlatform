@@ -22,6 +22,7 @@ public class InvitationForTestsRepository {
         temp.setToUserId(2L);
         temp.setActivated(b);
         temp.setProgramId(1L);
+        temp.setInvitationsLeft(5);
         temp.setActivatedLocation(test1());
         return temp;
     }
@@ -34,6 +35,7 @@ public class InvitationForTestsRepository {
         temp.setByUserId(2L);
         temp.setToUserId(3L);
         temp.setProgramId(1L);
+        temp.setInvitationsLeft(-1);
         return temp;
     }
 

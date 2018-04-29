@@ -8,6 +8,7 @@ import com.platform.app.invitation.repository.InvitationRepository;
 import com.platform.app.invitation.services.InvitationServices;
 import com.platform.app.invitation.services.impl.InvitationServicesImpl;
 import com.platform.app.platformUser.exception.UserNotFoundException;
+import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
 import com.platform.app.platformUser.repository.CustomerRepository;
 import com.platform.app.platformUser.repository.PlatformUserRepository;
@@ -105,9 +106,10 @@ public class InvitationServicesUTest {
         Invitation toBeSent = inv2();
         when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
-        invitedBy.setInvitationsLeft(5);
+        Program program = programWithId(program1(), 1L);
+        program.setActiveCustomers(new HashSet<>(Collections.singletonList(customerWithIdAndCreatedAt(mary(), 2L))));
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
-        when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
+        when(programRepository.findById(toBeSent.getProgramId())).thenReturn(program);
         when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
 
@@ -121,7 +123,6 @@ public class InvitationServicesUTest {
         Invitation toBeSent = inv2();
         when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
-        invitedBy.setInvitationsLeft(5);
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
         when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
@@ -136,7 +137,6 @@ public class InvitationServicesUTest {
         Invitation toBeSent = inv2();
         when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
-        invitedBy.setInvitationsLeft(5);
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(null);
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
         when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
@@ -151,7 +151,6 @@ public class InvitationServicesUTest {
         Invitation toBeSent = inv2();
         when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(null);
         Customer invitedBy = mary();
-        invitedBy.setInvitationsLeft(5);
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
         when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
@@ -166,7 +165,6 @@ public class InvitationServicesUTest {
         Invitation toBeSent = inv2();
         when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
-        invitedBy.setInvitationsLeft(5);
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(null);
         when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
@@ -181,7 +179,6 @@ public class InvitationServicesUTest {
         Invitation toBeSent = inv2();
         when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
-        invitedBy.setInvitationsLeft(5);
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         Program program = programWithId(program1(), 1L);
         program.addActiveCustomers(customerWithIdAndCreatedAt(johnDoe(), 3L));
@@ -198,7 +195,7 @@ public class InvitationServicesUTest {
         Invitation toBeSent = inv2();
         when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
-        invitedBy.setInvitationsLeft(0);
+        toBeSent.setInvitationsLeft(0);
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
         when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
@@ -212,14 +209,13 @@ public class InvitationServicesUTest {
     public void sendInBatch() {
         Invitation toBeSent = inv2();
         when(customerRepository.findById(3L)).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
-        Customer invitedBy = mary();
-        invitedBy.setInvitationsLeft(5);
+        Admin invitedBy = admin();
         when(userRepository.findById(2L)).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(userRepository.findById(3L)).thenReturn(userWithIdAndCreatedAt(johnDoe(), 3L));
         Program program = program1();
         program.setActiveCustomers(new HashSet<>());
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program, 1L));
-        when(customerRepository.findById(2L)).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
+        when(customerRepository.findById(2L)).thenReturn(customerWithIdAndCreatedAt(mary(), 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
         when(userRepository.findByEmail("mary@domain.com")).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(userRepository.findByEmail("john@domain.com")).thenReturn(userWithIdAndCreatedAt(johnDoe(), 3L));
@@ -236,7 +232,7 @@ public class InvitationServicesUTest {
         result2.setByUserId(2L);
         result2.setToUserId(3L);
 
-        List<Invitation> invs = invitationServices.sendInBatch(2L, 1L, emails);
+        List<Invitation> invs = invitationServices.sendInBatch(2L, 1L, emails, 5);
         assertThat(invs.size(), is(equalTo(2)));
         verify(invitationRepository).add(eq(result1));
         verify(invitationRepository).add(eq(result2));
@@ -248,7 +244,6 @@ public class InvitationServicesUTest {
         Invitation toBeSent = invitationWithId(inv2(), 1L);
         when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
-        invitedBy.setInvitationsLeft(5);
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
         when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
@@ -264,7 +259,6 @@ public class InvitationServicesUTest {
         Invitation toBeSent = invitationWithId(inv2(), 1L);
         when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
-        invitedBy.setInvitationsLeft(5);
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
         when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));

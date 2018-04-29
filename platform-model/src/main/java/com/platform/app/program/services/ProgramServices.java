@@ -2,6 +2,7 @@ package com.platform.app.program.services;
 
 import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
+import com.platform.app.platformUser.model.User;
 import com.platform.app.program.model.Application;
 import com.platform.app.program.model.Program;
 
@@ -46,4 +47,6 @@ public interface ProgramServices {
     Map<Customer, Instant> getCustomersOnWaitingList(Long programId);
 
     void inviteFromWaitingList(Long adminId, Long programId, List<Long> userIds, Integer allowedInvitationsLeft);
+
+    User.Roles getUsersRole(Long userId, Long programId);
 }

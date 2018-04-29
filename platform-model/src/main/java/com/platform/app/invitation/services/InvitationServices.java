@@ -11,9 +11,9 @@ public interface InvitationServices {
 
     Invitation send(Invitation inv);
 
-    List<Invitation> sendInBatch(Long byUserId, Long programId, List<String> emails);
+    List<Invitation> sendInBatch(Long byUserId, Long programId, List<String> emails, Integer allowedInvitations);
 
-    List<Invitation> sendInBatch(String email, Long programId, List<String> emails);
+    List<Invitation> sendInBatch(String email, Long programId, List<String> emails, Integer allowedInvitations);
 
     void accept(Invitation inv, GeoIP geoLocation);
 
@@ -34,4 +34,6 @@ public interface InvitationServices {
     List<Invitation> findByInvitee(String email);
 
     List<Invitation> findALl(String orderField);
+
+    void setAllowedInvitationsBatch(List<String> emails, Long programId, Integer invitationsCount);
 }

@@ -6,8 +6,10 @@ import com.platform.app.invitation.services.InvitationServices;
 import com.platform.app.platformUser.exception.UserNotFoundException;
 import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
+import com.platform.app.platformUser.model.User;
 import com.platform.app.platformUser.repository.AdminRepository;
 import com.platform.app.platformUser.repository.CustomerRepository;
+import com.platform.app.platformUser.repository.PlatformUserRepository;
 import com.platform.app.program.exception.AppNotFoundException;
 import com.platform.app.program.exception.ProgramExistentException;
 import com.platform.app.program.exception.ProgramNotFoundException;
@@ -38,10 +40,14 @@ public class ProgramServicesImpl implements ProgramServices {
     CustomerRepository customerRepository;
 
     @Inject
+    PlatformUserRepository userRepository;
+
+    @Inject
     InvitationServices invitationServices;
 
     @Inject
     ApplicationRepository applicationRepository;
+
 
     @Inject
     Validator validator;
@@ -284,13 +290,22 @@ public class ProgramServicesImpl implements ProgramServices {
         if (customers.size() != userIds.size()) {
             throw new UserNotFoundException();
         }
-        for (Customer item : customers) {
-            item.setInvitationsLeft(allowedInvitationsLeft);
-            customerRepository.update(item);
-        }
         List<String> emails = customers.stream().map(Customer::getEmail).collect(Collectors.toList());
-        invitationServices.sendInBatch(adminId, programId, emails);
+        invitationServices.sendInBatch(adminId, programId, emails, allowedInvitationsLeft);
         idsOnTheWaitingList.forEach(x -> unregisterOnWaitingList(programId, x));
+    }
+
+    @Override
+    public User.Roles getUsersRole(Long userId, Long programId) {
+        Program program = programRepository.findById(programId);
+        User user = userRepository.findById(userId);
+        if (program.getAdmins().contains(user)) {
+            return User.Roles.ADMINISTRATOR;
+        }
+        if (program.getActiveCustomers().contains(user)) {
+            return User.Roles.CUSTOMER;
+        }
+        return null;
     }
 
     private void validateProgram(Program program) throws FieldNotValidException, ProgramExistentException {

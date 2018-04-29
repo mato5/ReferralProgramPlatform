@@ -74,27 +74,39 @@ public class InvitationServicesImpl implements InvitationServices {
         if (invitedTo.getActiveCustomers().contains(invited)) {
             throw new InvitationServiceException("This customer is currently participating in this program.");
         }
-        Customer invitedByCustomer;
-        if (invitedBy.getUserType().equals(User.UserType.CUSTOMER)) {
-            invitedByCustomer = customerRepository.findById(invitedBy.getId());
-            if (invitedByCustomer.getInvitationsLeft() < 1) {
-                throw new InvitationServiceException("This customer has no invitations left.");
-            }
-            invitedByCustomer.setInvitationsLeft(invitedByCustomer.getInvitationsLeft() - 1);
-            customerRepository.update(invitedByCustomer);
+        if (!invitedTo.getActiveCustomers().contains(invitedBy) && !invitedTo.getAdmins().contains(invitedBy) &&
+                !invitedBy.getUserType().equals(User.UserType.EMPLOYEE)) {
+            throw new InvitationServiceException("This operation is forbidden for the provided users");
         }
-
+        if (User.Roles.CUSTOMER.equals(programServices.getUsersRole(invitedBy.getId(), invitedTo.getId()))) {
+            List<Invitation> usersInvitations = invitationRepository.findByInvitor(invitedBy.getId());
+            Invitation lookingFor = null;
+            for (Invitation item : usersInvitations) {
+                if (item.getProgramId().equals(invitedTo.getId())) {
+                    lookingFor = item;
+                    break;
+                }
+            }
+            if (lookingFor != null) {
+                if (lookingFor.getInvitationsLeft() < 1) {
+                    throw new InvitationServiceException("This customer has no invitations left.");
+                }
+                lookingFor.setInvitationsLeft(lookingFor.getInvitationsLeft() - 1);
+                invitationRepository.update(lookingFor);
+            }
+        }
         inv = invitationRepository.add(inv);
         return inv;
     }
 
     @Override
-    public List<Invitation> sendInBatch(Long byUserId, Long programId, List<String> emails) {
+    public List<Invitation> sendInBatch(Long byUserId, Long programId, List<String> emails, Integer allowedInvitations) {
         List<Invitation> sent = new ArrayList<>();
         for (String item : emails) {
             Invitation inv = new Invitation();
             inv.setByUserId(byUserId);
             inv.setProgramId(programId);
+            inv.setInvitationsLeft(allowedInvitations);
             inv = sendWithEmail(inv, item);
             sent.add(inv);
         }
@@ -102,12 +114,12 @@ public class InvitationServicesImpl implements InvitationServices {
     }
 
     @Override
-    public List<Invitation> sendInBatch(String email, Long programId, List<String> emails) {
+    public List<Invitation> sendInBatch(String email, Long programId, List<String> emails, Integer allowedInvitations) {
         User byUser = userRepository.findByEmail(email);
         if (byUser == null) {
             throw new UserNotFoundException();
         }
-        return sendInBatch(byUser.getId(), programId, emails);
+        return sendInBatch(byUser.getId(), programId, emails, allowedInvitations);
     }
 
     @Override
@@ -221,6 +233,31 @@ public class InvitationServicesImpl implements InvitationServices {
             orderField = "id";
         }
         return invitationRepository.findAll(orderField);
+    }
+
+    @Override
+    public void setAllowedInvitationsBatch(List<String> emails, Long programId, Integer invitationsCount) {
+        List<Long> customerIds = new ArrayList<>();
+        Program program = programRepository.findById(programId);
+        for (String email : emails) {
+            customerIds.add(customerRepository.findByEmail(email).getId());
+        }
+        if (customerIds.size() != emails.size()) {
+            throw new UserNotFoundException();
+        }
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        List<Invitation> invitations = invitationRepository.findByProgram(programId);
+        for (Invitation inv : invitations) {
+            for (Long id : customerIds) {
+                if (id.equals(inv.getByUserId())) {
+                    inv.setInvitationsLeft(invitationsCount);
+                    invitationRepository.update(inv);
+                }
+            }
+        }
+
     }
 
     private Invitation sendWithEmail(Invitation invitation, String email) {

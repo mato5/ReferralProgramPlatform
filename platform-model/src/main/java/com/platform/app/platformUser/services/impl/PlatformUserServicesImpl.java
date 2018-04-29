@@ -124,20 +124,6 @@ public class PlatformUserServicesImpl implements PlatformUserServices {
         userRepository.delete(user);
     }
 
-
-    @Override
-    public void setInvitationsLeft(List<Long> customerIds, Integer invitationsLeft) {
-        List<Customer> customers = customerRepository.findByIdBatch(customerIds);
-        if (customerIds.size() != customers.size()) {
-            throw new UserNotFoundException();
-        }
-        for (Customer item : customers) {
-            item.setInvitationsLeft(invitationsLeft);
-            customerRepository.update(item);
-        }
-    }
-
-
     private void validateUser(final User user) throws FieldNotValidException, UserExistentException {
         if (userRepository.alreadyExists(user)) {
             throw new UserExistentException();

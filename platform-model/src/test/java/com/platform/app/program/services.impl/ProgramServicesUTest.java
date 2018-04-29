@@ -548,8 +548,7 @@ public class ProgramServicesUTest {
         when(customerRepository.findByIdBatch(Collections.singletonList(1L))).thenReturn(customers);
         when(customerRepository.findById(1L)).thenReturn(customers.get(0));
         programServices.inviteFromWaitingList(100L, 1L, Collections.singletonList(1L), 5);
-        verify(customerRepository).update(customers.get(0));
-        verify(invitationServices).sendInBatch(100L, 1L, Collections.singletonList(johnDoe().getEmail()));
+        verify(invitationServices).sendInBatch(100L, 1L, Collections.singletonList(johnDoe().getEmail()), 5);
         verify(programRepository).update(program);
     }
 

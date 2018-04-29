@@ -30,5 +30,4 @@ public interface PlatformUserServices {
 
     void delete(User user);
 
-    void setInvitationsLeft(List<Long> customerIds, Integer invitationsLeft);
 }
