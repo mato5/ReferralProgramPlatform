@@ -247,16 +247,16 @@ public class ProgramServicesImpl implements ProgramServices {
     }
 
     @Override
-    public SortedMap<Instant, Customer> getCustomersOnWaitingList(Long programId) {
+    public Map<Customer, Instant> getCustomersOnWaitingList(Long programId) {
         Program program = programRepository.findById(programId);
         if (program == null) {
             throw new ProgramNotFoundException();
         }
-        SortedMap<Instant, Customer> result = new TreeMap<>();
-        for (Map.Entry<Instant, Long> entry : program.getWaitingList().getList().entrySet()) {
-            Customer c = customerRepository.findById(entry.getValue());
+        Map<Customer, Instant> result = new LinkedHashMap<>();
+        for (Map.Entry<Long, Instant> entry : program.getWaitingList().getOrderedList().entrySet()) {
+            Customer c = customerRepository.findById(entry.getKey());
             if (c != null) {
-                result.put(entry.getKey(), c);
+                result.put(c, entry.getValue());
             }
         }
         return result;

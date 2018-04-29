@@ -72,4 +72,14 @@ public class GeoIP {
 
         return Objects.hash(getIpAddress(), getCity());
     }
+
+    @Override
+    public String toString() {
+        return "GeoIP{" +
+                "ipAddress='" + ipAddress + '\'' +
+                ", city='" + city + '\'' +
+                ", latitude='" + latitude + '\'' +
+                ", longitude='" + longitude + '\'' +
+                '}';
+    }
 }

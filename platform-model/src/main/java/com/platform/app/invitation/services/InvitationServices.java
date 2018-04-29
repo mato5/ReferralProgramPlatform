@@ -13,6 +13,8 @@ public interface InvitationServices {
 
     List<Invitation> sendInBatch(Long byUserId, Long programId, List<String> emails);
 
+    List<Invitation> sendInBatch(String email, Long programId, List<String> emails);
+
     void accept(Invitation inv, GeoIP geoLocation);
 
     void decline(Invitation inv);
@@ -25,7 +27,11 @@ public interface InvitationServices {
 
     List<Invitation> findByInvitor(Long id);
 
+    List<Invitation> findByInvitor(String email);
+
     List<Invitation> findByInvitee(Long id);
+
+    List<Invitation> findByInvitee(String email);
 
     List<Invitation> findALl(String orderField);
 }

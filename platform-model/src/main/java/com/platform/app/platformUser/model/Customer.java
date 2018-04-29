@@ -12,14 +12,14 @@ import java.util.List;
 
 @Entity
 @DiscriminatorValue("CUSTOMER")
-public class Customer extends User{
+public class Customer extends User {
 
     private static final long serialVersionUID = -6100894877953675646L;
 
     /*@OneToOne(cascade = CascadeType.ALL)
     private Invitation invitation;*/
-    private Integer allowedInvitations;
-    private Integer invitationsLeft;
+    /*private Integer allowedInvitations;
+    private Integer invitationsLeft;*/
 
     public Customer() {
         setUserType(UserType.CUSTOMER);
@@ -38,20 +38,5 @@ public class Customer extends User{
         this.invitation = invitation;
     }*/
 
-    public Integer getAllowedInvitations() {
-        return allowedInvitations;
-    }
-
-    public void setAllowedInvitations(Integer allowedInvitations) {
-        this.allowedInvitations = allowedInvitations;
-    }
-
-    public Integer getInvitationsLeft() {
-        return invitationsLeft;
-    }
-
-    public void setInvitationsLeft(Integer invitationsLeft) {
-        this.invitationsLeft = invitationsLeft;
-    }
 
 }

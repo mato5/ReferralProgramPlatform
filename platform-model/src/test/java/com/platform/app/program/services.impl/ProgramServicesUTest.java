@@ -518,9 +518,9 @@ public class ProgramServicesUTest {
         when(customerRepository.findById(1L)).thenReturn(customer1);
         when(customerRepository.findById(2L)).thenReturn(customer2);
         when(programRepository.findById(1L)).thenReturn(program);
-        SortedMap<Instant, Customer> sortedMap = programServices.getCustomersOnWaitingList(1L);
-        assertThat(sortedMap.size(), is(equalTo(2)));
-        assertThat(new ArrayList<>(sortedMap.values()), is(equalTo(Arrays.asList(customer1, customer2))));
+        Map<Customer, Instant> resultMap = programServices.getCustomersOnWaitingList(1L);
+        assertThat(resultMap.size(), is(equalTo(2)));
+        assertThat(new ArrayList<>(resultMap.keySet()), is(equalTo(Arrays.asList(customer1, customer2))));
     }
 
     @Test(expected = ProgramNotFoundException.class)
@@ -534,7 +534,7 @@ public class ProgramServicesUTest {
         when(customerRepository.findById(1L)).thenReturn(customer1);
         when(customerRepository.findById(2L)).thenReturn(customer2);
         when(programRepository.findById(1L)).thenReturn(null);
-        SortedMap<Instant, Customer> sortedMap = programServices.getCustomersOnWaitingList(1L);
+        Map<Customer, Instant> resultMap = programServices.getCustomersOnWaitingList(1L);
     }
 
     @Test

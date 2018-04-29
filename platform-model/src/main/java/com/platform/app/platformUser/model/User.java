@@ -54,6 +54,8 @@ public abstract class User implements Serializable {
     @Enumerated(EnumType.STRING)
     private UserType userType;
 
+    private Integer invitationsLeft;
+
     protected abstract List<Roles> getDefaultRoles();
 
     public User() {
@@ -99,6 +101,14 @@ public abstract class User implements Serializable {
 
     public void setPassword(final String password) {
         this.password = password;
+    }
+
+    public Integer getInvitationsLeft() {
+        return invitationsLeft;
+    }
+
+    public void setInvitationsLeft(Integer invitationsLeft) {
+        this.invitationsLeft = invitationsLeft;
     }
 
     public List<Roles> getRoles() {

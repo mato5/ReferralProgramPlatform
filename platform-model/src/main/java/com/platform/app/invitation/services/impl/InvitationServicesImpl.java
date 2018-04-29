@@ -102,6 +102,15 @@ public class InvitationServicesImpl implements InvitationServices {
     }
 
     @Override
+    public List<Invitation> sendInBatch(String email, Long programId, List<String> emails) {
+        User byUser = userRepository.findByEmail(email);
+        if (byUser == null) {
+            throw new UserNotFoundException();
+        }
+        return sendInBatch(byUser.getId(), programId, emails);
+    }
+
+    @Override
     public void accept(Invitation inv, GeoIP geoLocation) {
         inv = invitationRepository.findById(inv.getId());
         if (inv == null) {
@@ -117,13 +126,13 @@ public class InvitationServicesImpl implements InvitationServices {
         User invitedBy = userRepository.findById(inv.getByUserId());
         Program invitedToProgram = programRepository.findById(inv.getProgramId());
         if (invitedToProgram == null) {
-            throw new InvitationServiceException("The program the customer has been invited to does not exist.");
+            throw new ProgramNotFoundException();
         }
         if (invited == null) {
-            throw new InvitationServiceException("The invited customer does not exist");
+            throw new UserNotFoundException();
         }
         if (invitedBy == null) {
-            throw new InvitationServiceException("The inviter does not exist");
+            throw new UserNotFoundException();
         }
         inv.setActivatedLocation(geoLocation);
         inv.setActivated(LocalDateTime.now());
@@ -143,19 +152,18 @@ public class InvitationServicesImpl implements InvitationServices {
         Customer invited = customerRepository.findById(inv.getToUserId());
         User invitedBy = userRepository.findById(inv.getByUserId());
         if (invited == null) {
-            throw new InvitationServiceException("The invited customer does not exist");
+            throw new UserNotFoundException();
         }
         if (invitedBy == null) {
-            throw new InvitationServiceException("The inviter does not exist");
+            throw new UserNotFoundException();
         }
         List<Program> invitedToPrograms = programRepository.findByActiveUser(invited);
-        if (invitedToPrograms == null) {
-            throw new InvitationServiceException("The user has not been invited to any program");
-        }
-        for (Program item : invitedToPrograms) {
-            if (item.getId().equals(inv.getProgramId())) {
-                programServices.removeCustomer(invited.getId(), item.getId());
-                break;
+        if (invitedToPrograms != null) {
+            for (Program item : invitedToPrograms) {
+                if (inv.getProgramId().equals(item.getId())) {
+                    programServices.removeCustomer(invited.getId(), item.getId());
+                    break;
+                }
             }
         }
         inv.setDeclined(true);
@@ -191,8 +199,20 @@ public class InvitationServicesImpl implements InvitationServices {
     }
 
     @Override
+    public List<Invitation> findByInvitor(String email) {
+        User user = userRepository.findByEmail(email);
+        return findByInvitor(user.getId());
+    }
+
+    @Override
     public List<Invitation> findByInvitee(Long id) {
         return invitationRepository.findByInvitee(id);
+    }
+
+    @Override
+    public List<Invitation> findByInvitee(String email) {
+        User user = userRepository.findByEmail(email);
+        return findByInvitee(user.getId());
     }
 
     @Override

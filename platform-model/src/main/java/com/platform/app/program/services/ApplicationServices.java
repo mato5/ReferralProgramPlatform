@@ -2,9 +2,11 @@ package com.platform.app.program.services;
 
 import com.platform.app.program.model.Application;
 
+import javax.ejb.Local;
 import java.util.List;
 import java.util.UUID;
 
+@Local
 public interface ApplicationServices {
 
     Application create(Application application);

@@ -14,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Arrays;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -81,6 +82,30 @@ public class ProgramRepositoryUTest extends TestBaseRepository {
 
         final Program afterUpdate = programRepository.findById(addedId);
         assertThat(afterUpdate.getName(), is(equalTo("Design Patterns")));
+    }
+
+    @Test
+    public void updateProgramsWaitingList() {
+        final Program toBeUpdated = normalizeDependencies(program1(), em);
+        final Long addedId = dbCommandExecutor.executeCommand(() -> {
+            return programRepository.add(toBeUpdated).getId();
+        });
+
+        assertThat(addedId, is(notNullValue()));
+        final Program program = programRepository.findById(addedId);
+        assertThat(program.getWaitingList().getOrderedIds(), is(equalTo(Arrays.asList(1L))));
+
+        program.getWaitingList().subscribe(2L);
+        program.getWaitingList().subscribe(3L);
+        program.getWaitingList().subscribe(4L);
+        program.getWaitingList().subscribe(5L);
+        dbCommandExecutor.executeCommand(() -> {
+            programRepository.update(program);
+            return null;
+        });
+
+        final Program afterUpdate = programRepository.findById(addedId);
+        assertThat(afterUpdate.getWaitingList().getOrderedIds(), is(equalTo(Arrays.asList(1L, 2L, 3L, 4L, 5L))));
     }
 
     @Test

@@ -5,12 +5,11 @@ import com.platform.app.platformUser.model.Customer;
 import com.platform.app.program.model.Application;
 import com.platform.app.program.model.Program;
 
+import javax.ejb.Local;
 import java.time.Instant;
-import java.util.Date;
-import java.util.List;
-import java.util.SortedMap;
-import java.util.UUID;
+import java.util.*;
 
+@Local
 public interface ProgramServices {
     Program create(Program program);
 
@@ -44,7 +43,7 @@ public interface ProgramServices {
 
     Program unregisterOnWaitingList(Long programId, Long customerId);
 
-    SortedMap<Instant, Customer> getCustomersOnWaitingList(Long programId);
+    Map<Customer, Instant> getCustomersOnWaitingList(Long programId);
 
     void inviteFromWaitingList(Long adminId, Long programId, List<Long> userIds, Integer allowedInvitationsLeft);
 }
