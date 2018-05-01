@@ -1,20 +1,15 @@
 package com.platform.app.common.appproperties;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.*;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Properties;
 import java.util.Set;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.event.Observes;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.inject.spi.InjectionTarget;
-import javax.enterprise.inject.spi.ProcessInjectionTarget;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ApplicationPropertiesLoaderExtension implements Extension {
 

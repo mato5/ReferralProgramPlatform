@@ -1,21 +1,12 @@
 package com.platform.app.platformUser.services.impl;
 
-import static com.platform.app.commontests.platformUser.UserArgumentMatcher.userEq;
-import static com.platform.app.commontests.platformUser.UserForTestsRepository.*;
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.mockito.Mockito.*;
-
 import com.platform.app.common.exception.FieldNotValidException;
 import com.platform.app.common.model.PaginatedData;
 import com.platform.app.common.utils.PasswordUtils;
 import com.platform.app.platformUser.exception.UserExistentException;
 import com.platform.app.platformUser.exception.UserNotFoundException;
-import com.platform.app.platformUser.exception.UserServiceException;
-import com.platform.app.platformUser.model.Customer;
 import com.platform.app.platformUser.model.User;
 import com.platform.app.platformUser.model.filter.UserFilter;
-import com.platform.app.platformUser.repository.CustomerRepository;
 import com.platform.app.platformUser.repository.PlatformUserRepository;
 import com.platform.app.platformUser.services.PlatformUserServices;
 import org.junit.Before;
@@ -25,9 +16,15 @@ import org.mockito.MockitoAnnotations;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+
+import static com.platform.app.commontests.platformUser.UserArgumentMatcher.userEq;
+import static com.platform.app.commontests.platformUser.UserForTestsRepository.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.*;
 
 public class PlatformUserServicesUTest {
     private Validator validator;
@@ -36,8 +33,6 @@ public class PlatformUserServicesUTest {
     @Mock
     private PlatformUserRepository userRepository;
 
-    @Mock
-    private CustomerRepository customerRepository;
 
     @Before
     public void initTestCase() {
@@ -47,7 +42,6 @@ public class PlatformUserServicesUTest {
 
         userServices = new PlatformUserServicesImpl();
         ((PlatformUserServicesImpl) userServices).userRepository = userRepository;
-        ((PlatformUserServicesImpl) userServices).customerRepository = customerRepository;
         ((PlatformUserServicesImpl) userServices).validator = validator;
     }
 
@@ -237,7 +231,7 @@ public class PlatformUserServicesUTest {
     public void findUserByFilter() {
         final PaginatedData<User> users = new PaginatedData<>(1,
                 Collections.singletonList(userWithIdAndCreatedAt(johnDoe(), 1L)));
-        when(userRepository.findByFilter((UserFilter) any())).thenReturn(users);
+        when(userRepository.findByFilter(any())).thenReturn(users);
 
         final PaginatedData<User> usersReturned = userServices.findByFilter(new UserFilter());
         assertThat(usersReturned.getNumberOfRows(), is(equalTo(1)));

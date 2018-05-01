@@ -1,14 +1,13 @@
 package com.platform.app.commontests.utils;
 
-import java.util.Arrays;
-import java.util.List;
+import com.platform.app.geoIP.model.GeoIP;
+import org.junit.Ignore;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
-
-import com.platform.app.geoIP.model.GeoIP;
-import org.junit.Ignore;
+import java.util.Arrays;
+import java.util.List;
 
 
 @Ignore

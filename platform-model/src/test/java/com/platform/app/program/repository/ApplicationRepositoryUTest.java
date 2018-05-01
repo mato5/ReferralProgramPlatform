@@ -11,7 +11,6 @@ import java.util.UUID;
 
 import static com.platform.app.commontests.program.ApplicationForTestsRepository.*;
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class ApplicationRepositoryUTest extends TestBaseRepository {

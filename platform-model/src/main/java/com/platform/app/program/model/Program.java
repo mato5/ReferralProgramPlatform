@@ -1,12 +1,13 @@
 package com.platform.app.program.model;
 
-import com.platform.app.platformUser.model.Admin;
-import com.platform.app.platformUser.model.Customer;
+import com.platform.app.platformUser.model.User;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 
 @Entity
 public class Program {
@@ -21,9 +22,9 @@ public class Program {
     @ManyToMany(cascade = {CascadeType.MERGE})
     @JoinTable(name = "PROGRAM_ADMIN", joinColumns = @JoinColumn(name = "PROGRAM_ID"),
             inverseJoinColumns = @JoinColumn(name = "ADMIN_ID"))
-    private Set<Admin> admins = new HashSet<>();
+    private Set<User> admins = new HashSet<>();
     @ManyToMany
-    private Set<Customer> activeCustomers = new HashSet<Customer>();
+    private Set<User> activeCustomers = new HashSet<>();
     @Embedded
     private WaitingList waitingList = new WaitingList();
     @OneToMany(cascade = CascadeType.MERGE)
@@ -38,11 +39,11 @@ public class Program {
         this.id = id;
     }
 
-    public Set<Customer> getActiveCustomers() {
+    public Set<User> getActiveCustomers() {
         return activeCustomers;
     }
 
-    public void setActiveCustomers(Set<Customer> activeCustomers) {
+    public void setActiveCustomers(Set<User> activeCustomers) {
         this.activeCustomers = activeCustomers;
     }
 
@@ -75,36 +76,30 @@ public class Program {
     }
 
     public void removeApplication(Application app) {
-        if (this.activeApplications.contains(app)) {
-            this.activeApplications.remove(app);
-        }
+        this.activeApplications.remove(app);
     }
 
-    public void addActiveCustomers(Customer customer) {
-        if (!this.activeCustomers.contains(customer)) {
-            this.activeCustomers.add(customer);
-        }
+    public void addActiveCustomers(User customer) {
+        this.activeCustomers.add(customer);
     }
 
-    public void removeActiveCustomers(Customer customer) {
-        if (this.activeCustomers.contains(customer)) {
-            this.activeCustomers.remove(customer);
-        }
+    public void removeActiveCustomers(User customer) {
+        this.activeCustomers.remove(customer);
     }
 
-    public Set<Admin> getAdmins() {
+    public Set<User> getAdmins() {
         return admins;
     }
 
-    public void setAdmins(Set<Admin> admins) {
+    public void setAdmins(Set<User> admins) {
         this.admins = admins;
     }
 
-    public void addAdmin(Admin admin) {
+    public void addAdmin(User admin) {
         this.admins.add(admin);
     }
 
-    public void removeAdmin(Admin admin) {
+    public void removeAdmin(User admin) {
         this.admins.remove(admin);
     }
 

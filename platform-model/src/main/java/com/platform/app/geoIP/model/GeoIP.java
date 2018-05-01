@@ -1,6 +1,6 @@
 package com.platform.app.geoIP.model;
 
-import javax.persistence.*;
+import javax.persistence.Embeddable;
 import java.util.Objects;
 
 @Embeddable

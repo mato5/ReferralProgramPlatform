@@ -2,8 +2,8 @@ package com.platform.app.invitation.repository;
 
 //import com.platform.app.category.model.Category;
 //import com.platform.app.category.repository.CategoryRepository;
+
 import com.platform.app.commontests.utils.TestBaseRepository;
-import com.platform.app.geoIP.model.GeoIP;
 import com.platform.app.invitation.model.Invitation;
 import org.junit.After;
 import org.junit.Before;
@@ -11,13 +11,11 @@ import org.junit.Test;
 
 import java.util.List;
 
-//import static com.platform.app.commontests.category.CategoryForTestsRepository.*;
-import static com.platform.app.commontests.geoIP.GeoIPForTestsRepository.*;
 import static com.platform.app.commontests.invitation.InvitationForTestsRepository.*;
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+
+//import static com.platform.app.commontests.category.CategoryForTestsRepository.*;
 
 public class InvitationRepositoryUTest extends TestBaseRepository {
     private InvitationRepository invitationRepository;

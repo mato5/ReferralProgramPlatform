@@ -6,8 +6,7 @@ import com.platform.app.platformUser.exception.UserNotFoundException;
 import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
 import com.platform.app.platformUser.model.User;
-import com.platform.app.platformUser.repository.AdminRepository;
-import com.platform.app.platformUser.repository.CustomerRepository;
+import com.platform.app.platformUser.repository.PlatformUserRepository;
 import com.platform.app.program.exception.AppNotFoundException;
 import com.platform.app.program.exception.ProgramExistentException;
 import com.platform.app.program.exception.ProgramNotFoundException;
@@ -25,8 +24,6 @@ import org.mockito.MockitoAnnotations;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
-
-import java.lang.reflect.Array;
 import java.time.Instant;
 import java.util.*;
 
@@ -39,9 +36,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ProgramServicesUTest {
 
@@ -52,16 +48,13 @@ public class ProgramServicesUTest {
     ProgramRepository programRepository;
 
     @Mock
-    AdminRepository adminRepository;
-
-    @Mock
-    CustomerRepository customerRepository;
-
-    @Mock
     InvitationServices invitationServices;
 
     @Mock
     ApplicationRepository applicationRepository;
+
+    @Mock
+    PlatformUserRepository userRepository;
 
     @Before
     public void initTestCase() {
@@ -73,8 +66,7 @@ public class ProgramServicesUTest {
         ((ProgramServicesImpl) programServices).applicationRepository = applicationRepository;
         ((ProgramServicesImpl) programServices).validator = validator;
         ((ProgramServicesImpl) programServices).programRepository = programRepository;
-        ((ProgramServicesImpl) programServices).adminRepository = adminRepository;
-        ((ProgramServicesImpl) programServices).customerRepository = customerRepository;
+        ((ProgramServicesImpl) programServices).userRepository = userRepository;
         ((ProgramServicesImpl) programServices).invitationServices = invitationServices;
     }
 
@@ -149,7 +141,7 @@ public class ProgramServicesUTest {
         user.setPassword("111111");
         user.setRoles(Arrays.asList(User.Roles.EMPLOYEE, User.Roles.ADMINISTRATOR));
         user = adminWithIdAndCreatedAt(user, 1L);
-        when(adminRepository.findById(1L)).thenReturn(user);
+        when(userRepository.findById(1L)).thenReturn(user);
         when(programRepository.findById(1L)).thenReturn(program);
         programServices.addAdmin(1L, 1L);
         verify(programRepository).update(program);
@@ -165,7 +157,7 @@ public class ProgramServicesUTest {
         user.setPassword("111111");
         user.setRoles(Arrays.asList(User.Roles.EMPLOYEE, User.Roles.ADMINISTRATOR));
         user = adminWithIdAndCreatedAt(user, 1L);
-        when(adminRepository.findById(1L)).thenReturn(user);
+        when(userRepository.findById(1L)).thenReturn(user);
         when(programRepository.findById(1L)).thenReturn(null);
         programServices.addAdmin(1L, 1L);
     }
@@ -180,7 +172,7 @@ public class ProgramServicesUTest {
         user.setPassword("111111");
         user.setRoles(Arrays.asList(User.Roles.EMPLOYEE, User.Roles.ADMINISTRATOR));
         user = adminWithIdAndCreatedAt(user, 1L);
-        when(adminRepository.findById(1L)).thenReturn(null);
+        when(userRepository.findById(1L)).thenReturn(null);
         when(programRepository.findById(1L)).thenReturn(program);
         programServices.addAdmin(1L, 1L);
     }
@@ -190,7 +182,7 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Admin admin = adminWithIdAndCreatedAt(admin(), 1L);
         program.setAdmins(new HashSet<>(Collections.singleton(admin)));
-        when(adminRepository.findById(1L)).thenReturn(admin);
+        when(userRepository.findById(1L)).thenReturn(admin);
         when(programRepository.findById(1L)).thenReturn(program);
         programServices.addAdmin(1L, 1L);
     }
@@ -207,9 +199,9 @@ public class ProgramServicesUTest {
         admin2.setRoles(Arrays.asList(User.Roles.EMPLOYEE, User.Roles.ADMINISTRATOR));
         admin2 = adminWithIdAndCreatedAt(admin2, 1L);
         program.setAdmins(new HashSet<>(Arrays.asList(admin1, admin2)));
-        when(adminRepository.findById(1L)).thenReturn(admin1);
+        when(userRepository.findById(1L)).thenReturn(admin1);
         when(programRepository.findById(1L)).thenReturn(program);
-        programServices.removeAdmin(1l, 1L);
+        programServices.removeAdmin(1L, 1L);
         verify(programRepository).update(program);
     }
 
@@ -225,9 +217,9 @@ public class ProgramServicesUTest {
         admin2.setRoles(Arrays.asList(User.Roles.EMPLOYEE, User.Roles.ADMINISTRATOR));
         admin2 = adminWithIdAndCreatedAt(admin2, 1L);
         program.setAdmins(new HashSet<>(Arrays.asList(admin1, admin2)));
-        when(adminRepository.findById(1L)).thenReturn(admin1);
+        when(userRepository.findById(1L)).thenReturn(admin1);
         when(programRepository.findById(1L)).thenReturn(null);
-        programServices.removeAdmin(1l, 1L);
+        programServices.removeAdmin(1L, 1L);
     }
 
     @Test(expected = UserNotFoundException.class)
@@ -242,9 +234,9 @@ public class ProgramServicesUTest {
         admin2.setRoles(Arrays.asList(User.Roles.EMPLOYEE, User.Roles.ADMINISTRATOR));
         admin2 = adminWithIdAndCreatedAt(admin2, 1L);
         program.setAdmins(new HashSet<>(Arrays.asList(admin1, admin2)));
-        when(adminRepository.findById(1L)).thenReturn(null);
+        when(userRepository.findById(1L)).thenReturn(null);
         when(programRepository.findById(1L)).thenReturn(program);
-        programServices.removeAdmin(1l, 1L);
+        programServices.removeAdmin(1L, 1L);
     }
 
     @Test(expected = ProgramServiceException.class)
@@ -259,9 +251,9 @@ public class ProgramServicesUTest {
         admin2.setRoles(Arrays.asList(User.Roles.EMPLOYEE, User.Roles.ADMINISTRATOR));
         admin2 = adminWithIdAndCreatedAt(admin2, 1L);
         program.setAdmins(new HashSet<>(Collections.singletonList(admin2)));
-        when(adminRepository.findById(1L)).thenReturn(admin1);
+        when(userRepository.findById(1L)).thenReturn(admin1);
         when(programRepository.findById(1L)).thenReturn(program);
-        programServices.removeAdmin(1l, 1L);
+        programServices.removeAdmin(1L, 1L);
     }
 
     @Test(expected = ProgramServiceException.class)
@@ -269,9 +261,9 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Admin admin1 = adminWithIdAndCreatedAt(admin(), 1L);
         program.setAdmins(new HashSet<>(Collections.singletonList(admin1)));
-        when(adminRepository.findById(1L)).thenReturn(admin1);
+        when(userRepository.findById(1L)).thenReturn(admin1);
         when(programRepository.findById(1L)).thenReturn(program);
-        programServices.removeAdmin(1l, 1L);
+        programServices.removeAdmin(1L, 1L);
     }
 
     @Test
@@ -279,7 +271,7 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 1L);
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(1L)).thenReturn(customer);
+        when(userRepository.findById(1L)).thenReturn(customer);
         programServices.addCustomer(1L, 1L);
         verify(programRepository).update(program);
     }
@@ -289,7 +281,7 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 1L);
         when(programRepository.findById(1L)).thenReturn(null);
-        when(customerRepository.findById(1L)).thenReturn(customer);
+        when(userRepository.findById(1L)).thenReturn(customer);
         programServices.addCustomer(1L, 1L);
     }
 
@@ -298,7 +290,7 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 1L);
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(1L)).thenReturn(null);
+        when(userRepository.findById(1L)).thenReturn(null);
         programServices.addCustomer(1L, 1L);
     }
 
@@ -308,7 +300,7 @@ public class ProgramServicesUTest {
         Customer customer = customerWithIdAndCreatedAt(mary(), 1L);
         program.setActiveCustomers(new HashSet<>(Collections.singleton(customer)));
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(1L)).thenReturn(customer);
+        when(userRepository.findById(1L)).thenReturn(customer);
         programServices.addCustomer(1L, 1L);
     }
 
@@ -318,7 +310,7 @@ public class ProgramServicesUTest {
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 1L);
         program.setActiveCustomers(new HashSet<>(Collections.singleton(customer)));
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(1L)).thenReturn(customer);
+        when(userRepository.findById(1L)).thenReturn(customer);
         programServices.removeCustomer(1L, 1L);
         verify(programRepository).update(program);
     }
@@ -327,7 +319,7 @@ public class ProgramServicesUTest {
     public void removeCustomerProgramNotFound() {
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 1L);
         when(programRepository.findById(1L)).thenReturn(null);
-        when(customerRepository.findById(1L)).thenReturn(customer);
+        when(userRepository.findById(1L)).thenReturn(customer);
         programServices.removeCustomer(1L, 1L);
     }
 
@@ -335,7 +327,7 @@ public class ProgramServicesUTest {
     public void removeCustomerNotFound() {
         Program program = programWithId(program1(), 1L);
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(1L)).thenReturn(null);
+        when(userRepository.findById(1L)).thenReturn(null);
         programServices.removeCustomer(1L, 1L);
     }
 
@@ -344,7 +336,7 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 1L);
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(1L)).thenReturn(customer);
+        when(userRepository.findById(1L)).thenReturn(customer);
         programServices.removeCustomer(1L, 1L);
     }
 
@@ -440,7 +432,7 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 3L);
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(3L)).thenReturn(customer);
+        when(userRepository.findById(3L)).thenReturn(customer);
         programServices.registerOnWaitingList(1L, 3L);
         verify(programRepository).update(program);
     }
@@ -449,7 +441,7 @@ public class ProgramServicesUTest {
     public void registerOnWaitingListProgramNotFound() {
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 3L);
         when(programRepository.findById(1L)).thenReturn(null);
-        when(customerRepository.findById(3L)).thenReturn(customer);
+        when(userRepository.findById(3L)).thenReturn(customer);
         programServices.registerOnWaitingList(1L, 3L);
     }
 
@@ -457,7 +449,7 @@ public class ProgramServicesUTest {
     public void registerOnWaitingListUserNotFound() {
         Program program = programWithId(program1(), 1L);
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(3L)).thenReturn(null);
+        when(userRepository.findById(3L)).thenReturn(null);
         programServices.registerOnWaitingList(1L, 3L);
     }
 
@@ -466,7 +458,7 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 1L);
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(1L)).thenReturn(customer);
+        when(userRepository.findById(1L)).thenReturn(customer);
         programServices.registerOnWaitingList(1L, 1L);
     }
 
@@ -475,7 +467,7 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 1L);
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(1L)).thenReturn(customer);
+        when(userRepository.findById(1L)).thenReturn(customer);
         programServices.unregisterOnWaitingList(1L, 1L);
         verify(programRepository).update(program);
     }
@@ -485,7 +477,7 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 1L);
         when(programRepository.findById(1L)).thenReturn(null);
-        when(customerRepository.findById(1L)).thenReturn(customer);
+        when(userRepository.findById(1L)).thenReturn(customer);
         programServices.unregisterOnWaitingList(1L, 1L);
     }
 
@@ -494,7 +486,7 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 1L);
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(1L)).thenReturn(null);
+        when(userRepository.findById(1L)).thenReturn(null);
         programServices.unregisterOnWaitingList(1L, 1L);
     }
 
@@ -503,7 +495,7 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Customer customer = customerWithIdAndCreatedAt(johnDoe(), 3L);
         when(programRepository.findById(1L)).thenReturn(program);
-        when(customerRepository.findById(3L)).thenReturn(customer);
+        when(userRepository.findById(3L)).thenReturn(customer);
         programServices.unregisterOnWaitingList(1L, 3L);
     }
 
@@ -515,10 +507,10 @@ public class ProgramServicesUTest {
         program.getWaitingList().subscribe(2L);
         Customer customer1 = customerWithIdAndCreatedAt(johnDoe(), 1L);
         Customer customer2 = customerWithIdAndCreatedAt(mary(), 2L);
-        when(customerRepository.findById(1L)).thenReturn(customer1);
-        when(customerRepository.findById(2L)).thenReturn(customer2);
+        when(userRepository.findById(1L)).thenReturn(customer1);
+        when(userRepository.findById(2L)).thenReturn(customer2);
         when(programRepository.findById(1L)).thenReturn(program);
-        Map<Customer, Instant> resultMap = programServices.getCustomersOnWaitingList(1L);
+        Map<User, Instant> resultMap = programServices.getCustomersOnWaitingList(1L);
         assertThat(resultMap.size(), is(equalTo(2)));
         assertThat(new ArrayList<>(resultMap.keySet()), is(equalTo(Arrays.asList(customer1, customer2))));
     }
@@ -531,10 +523,10 @@ public class ProgramServicesUTest {
         program.getWaitingList().subscribe(2L);
         Customer customer1 = customerWithIdAndCreatedAt(johnDoe(), 1L);
         Customer customer2 = customerWithIdAndCreatedAt(mary(), 2L);
-        when(customerRepository.findById(1L)).thenReturn(customer1);
-        when(customerRepository.findById(2L)).thenReturn(customer2);
+        when(userRepository.findById(1L)).thenReturn(customer1);
+        when(userRepository.findById(2L)).thenReturn(customer2);
         when(programRepository.findById(1L)).thenReturn(null);
-        Map<Customer, Instant> resultMap = programServices.getCustomersOnWaitingList(1L);
+        Map<User, Instant> resultMap = programServices.getCustomersOnWaitingList(1L);
     }
 
     @Test
@@ -542,11 +534,11 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         Admin admin = adminWithIdAndCreatedAt(admin(), 100L);
         program.setAdmins(new HashSet<>(Collections.singleton(admin)));
-        List<Customer> customers = Collections.singletonList(customerWithIdAndCreatedAt(johnDoe(), 1L));
+        List<User> customers = Collections.singletonList(customerWithIdAndCreatedAt(johnDoe(), 1L));
         when(programRepository.findById(1L)).thenReturn(program);
-        when(adminRepository.findById(100L)).thenReturn(admin);
-        when(customerRepository.findByIdBatch(Collections.singletonList(1L))).thenReturn(customers);
-        when(customerRepository.findById(1L)).thenReturn(customers.get(0));
+        when(userRepository.findById(100L)).thenReturn(admin);
+        when(userRepository.findByIdBatch(Collections.singletonList(1L))).thenReturn(customers);
+        when(userRepository.findById(1L)).thenReturn(customers.get(0));
         programServices.inviteFromWaitingList(100L, 1L, Collections.singletonList(1L), 5);
         verify(invitationServices).sendInBatch(100L, 1L, Collections.singletonList(johnDoe().getEmail()), 5);
         verify(programRepository).update(program);
@@ -556,11 +548,11 @@ public class ProgramServicesUTest {
     public void inviteFromWaitingListProgramNotFound() {
         Program program = programWithId(program1(), 1L);
         Admin admin = adminWithIdAndCreatedAt(admin(), 100L);
-        List<Customer> customers = Collections.singletonList(customerWithIdAndCreatedAt(johnDoe(), 1L));
+        List<User> customers = Collections.singletonList(customerWithIdAndCreatedAt(johnDoe(), 1L));
         when(programRepository.findById(1L)).thenReturn(null);
-        when(adminRepository.findById(100L)).thenReturn(admin);
-        when(customerRepository.findByIdBatch(Collections.singletonList(1L))).thenReturn(customers);
-        when(customerRepository.findById(1L)).thenReturn(customers.get(0));
+        when(userRepository.findById(100L)).thenReturn(admin);
+        when(userRepository.findByIdBatch(Collections.singletonList(1L))).thenReturn(customers);
+        when(userRepository.findById(1L)).thenReturn(customers.get(0));
         programServices.inviteFromWaitingList(100L, 1L, Collections.singletonList(1L), 5);
     }
 
@@ -569,11 +561,11 @@ public class ProgramServicesUTest {
         Program program = programWithId(program1(), 1L);
         program.setWaitingList(new WaitingList());
         Admin admin = adminWithIdAndCreatedAt(admin(), 100L);
-        List<Customer> customers = Collections.singletonList(customerWithIdAndCreatedAt(johnDoe(), 1L));
+        List<User> customers = Collections.singletonList(customerWithIdAndCreatedAt(johnDoe(), 1L));
         when(programRepository.findById(1L)).thenReturn(program);
-        when(adminRepository.findById(100L)).thenReturn(admin);
-        when(customerRepository.findByIdBatch(Collections.singletonList(1L))).thenReturn(customers);
-        when(customerRepository.findById(1L)).thenReturn(customers.get(0));
+        when(userRepository.findById(100L)).thenReturn(admin);
+        when(userRepository.findByIdBatch(Collections.singletonList(1L))).thenReturn(customers);
+        when(userRepository.findById(1L)).thenReturn(customers.get(0));
         programServices.inviteFromWaitingList(100L, 1L, Collections.singletonList(1L), 5);
     }
 
@@ -581,11 +573,11 @@ public class ProgramServicesUTest {
     public void inviteFromWaitingListAdminNotFound() {
         Program program = programWithId(program1(), 1L);
         Admin admin = adminWithIdAndCreatedAt(admin(), 100L);
-        List<Customer> customers = Collections.singletonList(customerWithIdAndCreatedAt(johnDoe(), 1L));
+        List<User> customers = Collections.singletonList(customerWithIdAndCreatedAt(johnDoe(), 1L));
         when(programRepository.findById(1L)).thenReturn(program);
-        when(adminRepository.findById(100L)).thenReturn(null);
-        when(customerRepository.findByIdBatch(Collections.singletonList(1L))).thenReturn(customers);
-        when(customerRepository.findById(1L)).thenReturn(customers.get(0));
+        when(userRepository.findById(100L)).thenReturn(null);
+        when(userRepository.findByIdBatch(Collections.singletonList(1L))).thenReturn(customers);
+        when(userRepository.findById(1L)).thenReturn(customers.get(0));
         programServices.inviteFromWaitingList(100L, 1L, Collections.singletonList(1L), 5);
     }
 
@@ -593,11 +585,11 @@ public class ProgramServicesUTest {
     public void inviteFromWaitingListAdminNotManaging() {
         Program program = programWithId(program1(), 1L);
         Admin admin = adminWithIdAndCreatedAt(admin(), 100L);
-        List<Customer> customers = Collections.singletonList(customerWithIdAndCreatedAt(johnDoe(), 1L));
+        List<User> customers = Collections.singletonList(customerWithIdAndCreatedAt(johnDoe(), 1L));
         when(programRepository.findById(1L)).thenReturn(program);
-        when(adminRepository.findById(100L)).thenReturn(admin);
-        when(customerRepository.findByIdBatch(Collections.singletonList(1L))).thenReturn(customers);
-        when(customerRepository.findById(1L)).thenReturn(customers.get(0));
+        when(userRepository.findById(100L)).thenReturn(admin);
+        when(userRepository.findByIdBatch(Collections.singletonList(1L))).thenReturn(customers);
+        when(userRepository.findById(1L)).thenReturn(customers.get(0));
         programServices.inviteFromWaitingList(100L, 1L, Collections.singletonList(1L), 5);
     }
 

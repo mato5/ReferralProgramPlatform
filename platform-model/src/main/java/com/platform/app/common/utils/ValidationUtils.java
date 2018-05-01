@@ -1,12 +1,11 @@
 package com.platform.app.common.utils;
 
-import java.util.Iterator;
-import java.util.Set;
+import com.platform.app.common.exception.FieldNotValidException;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
-
-import com.platform.app.common.exception.FieldNotValidException;
+import java.util.Iterator;
+import java.util.Set;
 
 public class ValidationUtils {
 

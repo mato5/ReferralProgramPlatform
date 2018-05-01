@@ -1,25 +1,20 @@
 package com.platform.app.program.repository;
 
-import static com.platform.app.commontests.platformUser.UserForTestsRepository.*;
-import static com.platform.app.commontests.program.ApplicationForTestsRepository.allApps;
-import static com.platform.app.commontests.program.ApplicationForTestsRepository.app2;
-import static com.platform.app.commontests.program.ProgramForTestsRepository.*;
-
-import com.platform.app.common.model.PaginatedData;
-import com.platform.app.common.model.filter.PaginationData;
 import com.platform.app.commontests.utils.TestBaseRepository;
-import com.platform.app.platformUser.model.Admin;
 import com.platform.app.program.model.Program;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import static com.platform.app.commontests.platformUser.UserForTestsRepository.*;
+import static com.platform.app.commontests.program.ApplicationForTestsRepository.allApps;
+import static com.platform.app.commontests.program.ApplicationForTestsRepository.app2;
+import static com.platform.app.commontests.program.ProgramForTestsRepository.*;
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class ProgramRepositoryUTest extends TestBaseRepository {
@@ -93,7 +88,7 @@ public class ProgramRepositoryUTest extends TestBaseRepository {
 
         assertThat(addedId, is(notNullValue()));
         final Program program = programRepository.findById(addedId);
-        assertThat(program.getWaitingList().getOrderedIds(), is(equalTo(Arrays.asList(1L))));
+        assertThat(program.getWaitingList().getOrderedIds(), is(equalTo(Collections.singletonList(1L))));
 
         program.getWaitingList().subscribe(2L);
         program.getWaitingList().subscribe(3L);
@@ -116,7 +111,7 @@ public class ProgramRepositoryUTest extends TestBaseRepository {
         });
 
         assertThat(programRepository.existsById(addedId), is(equalTo(true)));
-        assertThat(programRepository.existsById(999l), is(equalTo(false)));
+        assertThat(programRepository.existsById(999L), is(equalTo(false)));
     }
 
     @Test

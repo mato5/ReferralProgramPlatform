@@ -4,11 +4,7 @@ import com.platform.app.common.exception.FieldNotValidException;
 import com.platform.app.common.utils.ValidationUtils;
 import com.platform.app.invitation.services.InvitationServices;
 import com.platform.app.platformUser.exception.UserNotFoundException;
-import com.platform.app.platformUser.model.Admin;
-import com.platform.app.platformUser.model.Customer;
 import com.platform.app.platformUser.model.User;
-import com.platform.app.platformUser.repository.AdminRepository;
-import com.platform.app.platformUser.repository.CustomerRepository;
 import com.platform.app.platformUser.repository.PlatformUserRepository;
 import com.platform.app.program.exception.AppNotFoundException;
 import com.platform.app.program.exception.ProgramExistentException;
@@ -24,7 +20,10 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.Validator;
 import java.time.Instant;
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Stateless
@@ -32,12 +31,6 @@ public class ProgramServicesImpl implements ProgramServices {
 
     @Inject
     ProgramRepository programRepository;
-
-    @Inject
-    AdminRepository adminRepository;
-
-    @Inject
-    CustomerRepository customerRepository;
 
     @Inject
     PlatformUserRepository userRepository;
@@ -82,7 +75,7 @@ public class ProgramServicesImpl implements ProgramServices {
     @Override
     public void addAdmin(Long adminId, Long programId) {
         Program program = programRepository.findById(programId);
-        Admin admin = adminRepository.findById(adminId);
+        User admin = userRepository.findById(adminId);
         if (program == null) {
             throw new ProgramNotFoundException();
         }
@@ -100,7 +93,7 @@ public class ProgramServicesImpl implements ProgramServices {
     @Override
     public void removeAdmin(Long adminId, Long programId) {
         Program program = programRepository.findById(programId);
-        Admin admin = adminRepository.findById(adminId);
+        User admin = userRepository.findById(adminId);
         if (program == null) {
             throw new ProgramNotFoundException();
         }
@@ -120,7 +113,7 @@ public class ProgramServicesImpl implements ProgramServices {
     @Override
     public void addCustomer(Long customerId, Long programId) {
         Program program = programRepository.findById(programId);
-        Customer customer = customerRepository.findById(customerId);
+        User customer = userRepository.findById(customerId);
         if (program == null) {
             throw new ProgramNotFoundException();
         }
@@ -140,7 +133,7 @@ public class ProgramServicesImpl implements ProgramServices {
     @Override
     public void removeCustomer(Long customerId, Long programId) {
         Program program = programRepository.findById(programId);
-        Customer customer = customerRepository.findById(customerId);
+        User customer = userRepository.findById(customerId);
         if (program == null) {
             throw new ProgramNotFoundException();
         }
@@ -156,19 +149,29 @@ public class ProgramServicesImpl implements ProgramServices {
 
 
     @Override
-    public List<Program> findByAdmin(Admin admin) {
-        admin = adminRepository.findById(admin.getId());
+    public List<Program> findByAdmin(User admin) {
+        admin = userRepository.findById(admin.getId());
+        if (admin == null) {
+            throw new UserNotFoundException();
+        }
         return programRepository.findByAdmin(admin);
     }
 
     @Override
     public List<Program> findAll(String orderfield) {
+        if (orderfield == null) {
+            orderfield = "name";
+        }
         return programRepository.findAll(orderfield);
     }
 
     @Override
     public Program findById(Long id) {
-        return programRepository.findById(id);
+        Program program = programRepository.findById(id);
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        return program;
     }
 
     @Override
@@ -219,7 +222,7 @@ public class ProgramServicesImpl implements ProgramServices {
     @Override
     public Program registerOnWaitingList(Long programId, Long customerId) {
         Program program = programRepository.findById(programId);
-        Customer customer = customerRepository.findById(customerId);
+        User customer = userRepository.findById(customerId);
         if (program == null) {
             throw new ProgramNotFoundException();
         }
@@ -237,7 +240,7 @@ public class ProgramServicesImpl implements ProgramServices {
     @Override
     public Program unregisterOnWaitingList(Long programId, Long customerId) {
         Program program = programRepository.findById(programId);
-        Customer customer = customerRepository.findById(customerId);
+        User customer = userRepository.findById(customerId);
         if (program == null) {
             throw new ProgramNotFoundException();
         }
@@ -253,16 +256,16 @@ public class ProgramServicesImpl implements ProgramServices {
     }
 
     @Override
-    public Map<Customer, Instant> getCustomersOnWaitingList(Long programId) {
+    public Map<User, Instant> getCustomersOnWaitingList(Long programId) {
         Program program = programRepository.findById(programId);
         if (program == null) {
             throw new ProgramNotFoundException();
         }
-        Map<Customer, Instant> result = new LinkedHashMap<>();
+        Map<User, Instant> result = new LinkedHashMap<>();
         for (Map.Entry<Long, Instant> entry : program.getWaitingList().getOrderedList().entrySet()) {
-            Customer c = customerRepository.findById(entry.getKey());
-            if (c != null) {
-                result.put(c, entry.getValue());
+            User customer = userRepository.findById(entry.getKey());
+            if (customer != null) {
+                result.put(customer, entry.getValue());
             }
         }
         return result;
@@ -279,26 +282,50 @@ public class ProgramServicesImpl implements ProgramServices {
         if (!idsOnTheWaitingList.containsAll(userIds)) {
             throw new ProgramServiceException("Inviting from the waiting list contains incorrect user IDs");
         }
-        Admin admin = adminRepository.findById(adminId);
+        User admin = userRepository.findById(adminId);
         if (admin == null) {
             throw new UserNotFoundException();
         }
         if (!program.getAdmins().contains(admin)) {
             throw new ProgramServiceException("This program is not managed by the provided admin account");
         }
-        List<Customer> customers = customerRepository.findByIdBatch(userIds);
+        List<User> customers = userRepository.findByIdBatch(userIds);
         if (customers.size() != userIds.size()) {
             throw new UserNotFoundException();
         }
-        List<String> emails = customers.stream().map(Customer::getEmail).collect(Collectors.toList());
+        List<String> emails = customers.stream().map(User::getEmail).collect(Collectors.toList());
         invitationServices.sendInBatch(adminId, programId, emails, allowedInvitationsLeft);
         idsOnTheWaitingList.forEach(x -> unregisterOnWaitingList(programId, x));
     }
 
     @Override
     public User.Roles getUsersRole(Long userId, Long programId) {
-        Program program = programRepository.findById(programId);
         User user = userRepository.findById(userId);
+        Program program = programRepository.findById(programId);
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        return getUsersRole(user, program);
+    }
+
+    @Override
+    public User.Roles getUsersRole(String email, Long programId) {
+        User user = userRepository.findByEmail(email);
+        Program program = programRepository.findById(programId);
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        return getUsersRole(user, program);
+    }
+
+    @Override
+    public User.Roles getUsersRole(User user, Program program) {
         if (program.getAdmins().contains(user)) {
             return User.Roles.ADMINISTRATOR;
         }

@@ -1,14 +1,13 @@
 package com.platform.app.common.repository;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
+import com.platform.app.common.model.PaginatedData;
+import com.platform.app.common.model.filter.PaginationData;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-
-import com.platform.app.common.model.PaginatedData;
-import com.platform.app.common.model.filter.PaginationData;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 public abstract class GenericRepository<T> {
 

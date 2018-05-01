@@ -1,16 +1,13 @@
 package com.platform.app.invitation.services.impl;
 
 import com.platform.app.common.exception.FieldNotValidException;
-import com.platform.app.geoIP.model.GeoIP;
 import com.platform.app.invitation.exception.InvitationServiceException;
 import com.platform.app.invitation.model.Invitation;
 import com.platform.app.invitation.repository.InvitationRepository;
 import com.platform.app.invitation.services.InvitationServices;
-import com.platform.app.invitation.services.impl.InvitationServicesImpl;
 import com.platform.app.platformUser.exception.UserNotFoundException;
 import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
-import com.platform.app.platformUser.repository.CustomerRepository;
 import com.platform.app.platformUser.repository.PlatformUserRepository;
 import com.platform.app.program.exception.ProgramNotFoundException;
 import com.platform.app.program.model.Program;
@@ -23,14 +20,12 @@ import org.mockito.MockitoAnnotations;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
 import static com.platform.app.commontests.geoIP.GeoIPForTestsRepository.test1;
-import static com.platform.app.commontests.invitation.InvitationForTestsRepository.inv1;
 import static com.platform.app.commontests.invitation.InvitationForTestsRepository.inv2;
 import static com.platform.app.commontests.invitation.InvitationForTestsRepository.invitationWithId;
 import static com.platform.app.commontests.platformUser.UserForTestsRepository.*;
@@ -41,9 +36,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class InvitationServicesUTest {
@@ -56,8 +48,6 @@ public class InvitationServicesUTest {
     @Mock
     PlatformUserRepository userRepository;
 
-    @Mock
-    CustomerRepository customerRepository;
 
     @Mock
     ProgramRepository programRepository;
@@ -75,7 +65,6 @@ public class InvitationServicesUTest {
         ((InvitationServicesImpl) invitationServices).userRepository = userRepository;
         ((InvitationServicesImpl) invitationServices).validator = validator;
         ((InvitationServicesImpl) invitationServices).invitationRepository = invitationRepository;
-        ((InvitationServicesImpl) invitationServices).customerRepository = customerRepository;
         ((InvitationServicesImpl) invitationServices).programRepository = programRepository;
         ((InvitationServicesImpl) invitationServices).programServices = programServices;
     }
@@ -104,13 +93,13 @@ public class InvitationServicesUTest {
     @Test
     public void sendInvitationCorrect() {
         Invitation toBeSent = inv2();
-        when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
+        when(userRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
         Program program = programWithId(program1(), 1L);
         program.setActiveCustomers(new HashSet<>(Collections.singletonList(customerWithIdAndCreatedAt(mary(), 2L))));
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(program);
-        when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
+        when(userRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
 
         invitationServices.send(toBeSent);
@@ -121,11 +110,11 @@ public class InvitationServicesUTest {
     @Test(expected = InvitationServiceException.class)
     public void sendInvitationAlreadyInvited() {
         Invitation toBeSent = inv2();
-        when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
+        when(userRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
-        when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
+        when(userRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(true);
 
         invitationServices.send(toBeSent);
@@ -135,11 +124,10 @@ public class InvitationServicesUTest {
     @Test(expected = UserNotFoundException.class)
     public void sendInvitationInvitorNotFound() {
         Invitation toBeSent = inv2();
-        when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
+        when(userRepository.findById(3L)).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(null);
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
-        when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
 
         invitationServices.send(toBeSent);
@@ -149,11 +137,11 @@ public class InvitationServicesUTest {
     @Test(expected = UserNotFoundException.class)
     public void sendInvitationInvitedNotFound() {
         Invitation toBeSent = inv2();
-        when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(null);
+        when(userRepository.findById(toBeSent.getToUserId())).thenReturn(null);
         Customer invitedBy = mary();
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
-        when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
+        when(userRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
 
         invitationServices.send(toBeSent);
@@ -163,11 +151,11 @@ public class InvitationServicesUTest {
     @Test(expected = ProgramNotFoundException.class)
     public void sendInvitationProgramNotFound() {
         Invitation toBeSent = inv2();
-        when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
+        when(userRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(null);
-        when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
+        when(userRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
 
         invitationServices.send(toBeSent);
@@ -177,13 +165,13 @@ public class InvitationServicesUTest {
     @Test(expected = InvitationServiceException.class)
     public void sendInvitationUserAlreadyActive() {
         Invitation toBeSent = inv2();
-        when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
+        when(userRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         Program program = programWithId(program1(), 1L);
         program.addActiveCustomers(customerWithIdAndCreatedAt(johnDoe(), 3L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(program);
-        when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
+        when(userRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
 
         invitationServices.send(toBeSent);
@@ -193,12 +181,12 @@ public class InvitationServicesUTest {
     @Test(expected = InvitationServiceException.class)
     public void sendInvitationNoInvsLeft() {
         Invitation toBeSent = inv2();
-        when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
+        when(userRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
         toBeSent.setInvitationsLeft(0);
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
-        when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
+        when(userRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
 
         invitationServices.send(toBeSent);
@@ -208,14 +196,14 @@ public class InvitationServicesUTest {
     @Test
     public void sendInBatch() {
         Invitation toBeSent = inv2();
-        when(customerRepository.findById(3L)).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
+        when(userRepository.findById(3L)).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Admin invitedBy = admin();
         when(userRepository.findById(2L)).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(userRepository.findById(3L)).thenReturn(userWithIdAndCreatedAt(johnDoe(), 3L));
         Program program = program1();
         program.setActiveCustomers(new HashSet<>());
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program, 1L));
-        when(customerRepository.findById(2L)).thenReturn(customerWithIdAndCreatedAt(mary(), 2L));
+        when(userRepository.findById(2L)).thenReturn(customerWithIdAndCreatedAt(mary(), 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
         when(userRepository.findByEmail("mary@domain.com")).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(userRepository.findByEmail("john@domain.com")).thenReturn(userWithIdAndCreatedAt(johnDoe(), 3L));
@@ -242,11 +230,11 @@ public class InvitationServicesUTest {
     @Test
     public void acceptInv() {
         Invitation toBeSent = invitationWithId(inv2(), 1L);
-        when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
+        when(userRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
-        when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
+        when(userRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
         when(invitationRepository.findById(1L)).thenReturn(toBeSent);
         invitationServices.accept(toBeSent, test1());
 
@@ -257,11 +245,11 @@ public class InvitationServicesUTest {
     @Test
     public void declineInv() {
         Invitation toBeSent = invitationWithId(inv2(), 1L);
-        when(customerRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
+        when(userRepository.findById(toBeSent.getToUserId())).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         Customer invitedBy = mary();
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
-        when(customerRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
+        when(userRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findByActiveUser(customerWithIdAndCreatedAt(johnDoe(), 3L))).thenReturn(Collections.singletonList(programWithId(program1(), 1L)));
         when(invitationRepository.findById(1L)).thenReturn(toBeSent);
         invitationServices.decline(toBeSent);

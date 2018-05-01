@@ -1,12 +1,5 @@
 package com.platform.app.geoIP.repository;
 
-import com.platform.app.common.repository.GenericRepository;
-import com.platform.app.geoIP.model.GeoIP;
-
-import javax.ejb.Stateless;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
 //@Stateless
 @Deprecated
 public class GeoIPRepository

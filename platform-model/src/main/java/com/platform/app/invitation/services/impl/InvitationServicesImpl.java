@@ -9,28 +9,19 @@ import com.platform.app.invitation.model.Invitation;
 import com.platform.app.invitation.repository.InvitationRepository;
 import com.platform.app.invitation.services.InvitationServices;
 import com.platform.app.platformUser.exception.UserNotFoundException;
-import com.platform.app.platformUser.model.Admin;
-import com.platform.app.platformUser.model.Customer;
 import com.platform.app.platformUser.model.User;
-import com.platform.app.platformUser.repository.AdminRepository;
-import com.platform.app.platformUser.repository.CustomerRepository;
 import com.platform.app.platformUser.repository.PlatformUserRepository;
-import com.platform.app.platformUser.services.PlatformUserServices;
 import com.platform.app.program.exception.ProgramNotFoundException;
 import com.platform.app.program.model.Program;
 import com.platform.app.program.repository.ProgramRepository;
 import com.platform.app.program.services.ProgramServices;
 
-import javax.annotation.Resource;
-import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.Validator;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 @Stateless
 public class InvitationServicesImpl implements InvitationServices {
@@ -40,9 +31,6 @@ public class InvitationServicesImpl implements InvitationServices {
 
     @Inject
     PlatformUserRepository userRepository;
-
-    @Inject
-    CustomerRepository customerRepository;
 
     @Inject
     ProgramRepository programRepository;
@@ -56,7 +44,7 @@ public class InvitationServicesImpl implements InvitationServices {
     @Override
     public Invitation send(Invitation inv) {
         validateInvitation(inv);
-        Customer invited = customerRepository.findById(inv.getToUserId());
+        User invited = userRepository.findById(inv.getToUserId());
         User invitedBy = userRepository.findById(inv.getByUserId());
         Program invitedTo = programRepository.findById(inv.getProgramId());
         if (invited == null) {
@@ -88,7 +76,7 @@ public class InvitationServicesImpl implements InvitationServices {
                 }
             }
             if (lookingFor != null) {
-                if (lookingFor.getInvitationsLeft() < 1) {
+                if (lookingFor.getInvitationsLeft() < 1 && (lookingFor.getInvitationsLeft() != -1)) {
                     throw new InvitationServiceException("This customer has no invitations left.");
                 }
                 lookingFor.setInvitationsLeft(lookingFor.getInvitationsLeft() - 1);
@@ -134,7 +122,7 @@ public class InvitationServicesImpl implements InvitationServices {
         if (inv.getActivated() != null) {
             throw new InvitationServiceException("This invitation has already been accepted");
         }
-        Customer invited = customerRepository.findById(inv.getToUserId());
+        User invited = userRepository.findById(inv.getToUserId());
         User invitedBy = userRepository.findById(inv.getByUserId());
         Program invitedToProgram = programRepository.findById(inv.getProgramId());
         if (invitedToProgram == null) {
@@ -161,7 +149,7 @@ public class InvitationServicesImpl implements InvitationServices {
         if (inv.isDeclined()) {
             throw new InvitationServiceException("This invitation has already been declined");
         }
-        Customer invited = customerRepository.findById(inv.getToUserId());
+        User invited = userRepository.findById(inv.getToUserId());
         User invitedBy = userRepository.findById(inv.getByUserId());
         if (invited == null) {
             throw new UserNotFoundException();
@@ -240,7 +228,11 @@ public class InvitationServicesImpl implements InvitationServices {
         List<Long> customerIds = new ArrayList<>();
         Program program = programRepository.findById(programId);
         for (String email : emails) {
-            customerIds.add(customerRepository.findByEmail(email).getId());
+            User toBeAdded = userRepository.findByEmail(email);
+            if (toBeAdded == null) {
+                throw new UserNotFoundException();
+            }
+            customerIds.add(toBeAdded.getId());
         }
         if (customerIds.size() != emails.size()) {
             throw new UserNotFoundException();

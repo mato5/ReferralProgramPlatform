@@ -1,14 +1,14 @@
 package com.platform.app.program.services;
 
-import com.platform.app.platformUser.model.Admin;
-import com.platform.app.platformUser.model.Customer;
 import com.platform.app.platformUser.model.User;
 import com.platform.app.program.model.Application;
 import com.platform.app.program.model.Program;
 
 import javax.ejb.Local;
 import java.time.Instant;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 @Local
 public interface ProgramServices {
@@ -26,7 +26,7 @@ public interface ProgramServices {
 
     void removeCustomer(Long customerId, Long programId);
 
-    List<Program> findByAdmin(Admin admin);
+    List<Program> findByAdmin(User admin);
 
     List<Program> findAll(String orderfield);
 
@@ -44,9 +44,13 @@ public interface ProgramServices {
 
     Program unregisterOnWaitingList(Long programId, Long customerId);
 
-    Map<Customer, Instant> getCustomersOnWaitingList(Long programId);
+    Map<User, Instant> getCustomersOnWaitingList(Long programId);
 
     void inviteFromWaitingList(Long adminId, Long programId, List<Long> userIds, Integer allowedInvitationsLeft);
 
     User.Roles getUsersRole(Long userId, Long programId);
+
+    User.Roles getUsersRole(String email, Long programId);
+
+    User.Roles getUsersRole(User user, Program program);
 }

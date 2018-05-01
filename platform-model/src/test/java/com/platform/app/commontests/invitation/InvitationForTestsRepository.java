@@ -1,14 +1,13 @@
 package com.platform.app.commontests.invitation;
 
-import static com.platform.app.commontests.geoIP.GeoIPForTestsRepository.*;
-
-import com.platform.app.geoIP.model.GeoIP;
 import com.platform.app.invitation.model.Invitation;
 import org.junit.Ignore;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+
+import static com.platform.app.commontests.geoIP.GeoIPForTestsRepository.test1;
 
 @Ignore
 public class InvitationForTestsRepository {

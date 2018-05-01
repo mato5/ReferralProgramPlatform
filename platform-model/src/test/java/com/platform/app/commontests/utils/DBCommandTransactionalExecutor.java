@@ -1,8 +1,8 @@
 package com.platform.app.commontests.utils;
 
-import javax.persistence.EntityManager;
-
 import org.junit.Ignore;
+
+import javax.persistence.EntityManager;
 
 @Ignore
 public class DBCommandTransactionalExecutor {

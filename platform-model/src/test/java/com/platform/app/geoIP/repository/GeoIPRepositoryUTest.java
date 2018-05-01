@@ -2,20 +2,10 @@ package com.platform.app.geoIP.repository;
 
 //import com.platform.app.category.model.Category;
 //import com.platform.app.category.repository.CategoryRepository;
-import com.platform.app.commontests.utils.TestBaseRepository;
-import com.platform.app.geoIP.model.GeoIP;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
-import java.util.List;
+import com.platform.app.commontests.utils.TestBaseRepository;
 
 //import static com.platform.app.commontests.category.CategoryForTestsRepository.*;
-import static com.platform.app.commontests.geoIP.GeoIPForTestsRepository.*;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
 @Deprecated
 public class GeoIPRepositoryUTest extends TestBaseRepository {

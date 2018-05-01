@@ -2,13 +2,10 @@ package com.platform.app.platformUser.services;
 
 import com.platform.app.common.model.PaginatedData;
 import com.platform.app.platformUser.exception.UserNotFoundException;
-import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.User;
 import com.platform.app.platformUser.model.filter.UserFilter;
-import com.platform.app.program.model.Program;
 
 import javax.ejb.Local;
-import java.util.List;
 
 @Local
 public interface PlatformUserServices {

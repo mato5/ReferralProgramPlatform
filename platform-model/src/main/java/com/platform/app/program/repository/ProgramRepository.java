@@ -1,7 +1,6 @@
 package com.platform.app.program.repository;
 
 import com.platform.app.common.repository.GenericRepository;
-import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.User;
 import com.platform.app.program.model.Application;
 import com.platform.app.program.model.Program;
@@ -28,7 +27,7 @@ public class ProgramRepository extends GenericRepository<Program> {
         return em;
     }
 
-    public List<Program> findByAdmin(Admin admin) {
+    public List<Program> findByAdmin(User admin) {
         String query = "select p from Program p join p.admins a where a.id = :aId";
 
         return em.createQuery(query, Program.class)

@@ -2,6 +2,7 @@ package com.platform.app.commontests.program;
 
 import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
+import com.platform.app.platformUser.model.User;
 import com.platform.app.program.model.Application;
 import com.platform.app.program.model.Program;
 import org.junit.Ignore;
@@ -11,7 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static com.platform.app.commontests.platformUser.UserForTestsRepository.admin;
-import static com.platform.app.commontests.platformUser.UserForTestsRepository.johnDoe;
 import static com.platform.app.commontests.platformUser.UserForTestsRepository.mary;
 import static com.platform.app.commontests.program.ApplicationForTestsRepository.app1;
 import static com.platform.app.commontests.utils.TestRepositoryUtils.findByPropertyNameAndValue;
@@ -63,13 +63,13 @@ public final class ProgramForTestsRepository {
     public static Program normalizeDependencies(final Program program, final EntityManager em) {
 
         //Admins
-        for (Admin item : program.getAdmins()) {
+        for (User item : program.getAdmins()) {
             Admin associatedAdmin = findByPropertyNameAndValue(em, Admin.class, "email", item.getEmail());
             item.setId(associatedAdmin.getId());
         }
 
         //Active customers
-        for (Customer item : program.getActiveCustomers()) {
+        for (User item : program.getActiveCustomers()) {
             Customer associatedActiveCustomer = findByPropertyNameAndValue(em, Customer.class, "email", item.getEmail());
             item.setId(associatedActiveCustomer.getId());
         }

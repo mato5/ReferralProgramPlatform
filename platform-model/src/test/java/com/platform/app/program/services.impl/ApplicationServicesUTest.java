@@ -13,14 +13,13 @@ import org.mockito.MockitoAnnotations;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
-
 import java.util.UUID;
 
-import static com.platform.app.commontests.program.ApplicationForTestsRepository.app1;
-import static com.platform.app.commontests.program.ApplicationForTestsRepository.app2;
-import static com.platform.app.commontests.program.ApplicationForTestsRepository.appWithId;
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
+import static com.platform.app.commontests.program.ApplicationForTestsRepository.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.*;
 
 
@@ -111,7 +110,7 @@ public class ApplicationServicesUTest {
         applicationServices.changeName("Best APP", app.getApiKey());
     }
 
-    @Test(expected = AppServiceException.class)
+    @Test(expected = FieldNotValidException.class)
     public void changeAppNameNull() {
         UUID uid = UUID.fromString("38400000-8cf0-11bd-b23e-10b96e4ef00d");
         Application app = appWithId(app1(), uid);

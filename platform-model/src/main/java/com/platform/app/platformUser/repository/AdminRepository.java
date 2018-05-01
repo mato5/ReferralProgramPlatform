@@ -3,7 +3,6 @@ package com.platform.app.platformUser.repository;
 import com.platform.app.common.model.PaginatedData;
 import com.platform.app.common.repository.GenericRepository;
 import com.platform.app.platformUser.model.Admin;
-import com.platform.app.platformUser.model.User;
 import com.platform.app.platformUser.model.filter.UserFilter;
 
 import javax.ejb.Stateless;
@@ -13,6 +12,7 @@ import javax.persistence.PersistenceContext;
 import java.util.HashMap;
 import java.util.Map;
 
+@Deprecated
 @Stateless
 public class AdminRepository extends GenericRepository<Admin> {
 

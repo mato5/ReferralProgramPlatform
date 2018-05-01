@@ -1,6 +1,8 @@
 package com.platform.app.program.model;
 
-import javax.persistence.*;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embeddable;
+import javax.persistence.OrderBy;
 import java.time.Instant;
 import java.util.*;
 

@@ -9,17 +9,10 @@ import com.platform.app.invitation.repository.InvitationRepository;
 import com.platform.app.platformUser.exception.UserExistentException;
 import com.platform.app.platformUser.exception.UserNotFoundException;
 import com.platform.app.platformUser.exception.UserServiceException;
-import com.platform.app.platformUser.model.Admin;
-import com.platform.app.platformUser.model.Customer;
 import com.platform.app.platformUser.model.User;
 import com.platform.app.platformUser.model.filter.UserFilter;
-import com.platform.app.platformUser.repository.AdminRepository;
-import com.platform.app.platformUser.repository.CustomerRepository;
 import com.platform.app.platformUser.repository.PlatformUserRepository;
 import com.platform.app.platformUser.services.PlatformUserServices;
-import com.platform.app.program.exception.ProgramNotFoundException;
-import com.platform.app.program.model.Program;
-import com.platform.app.program.repository.ProgramRepository;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
@@ -31,9 +24,6 @@ public class PlatformUserServicesImpl implements PlatformUserServices {
 
     @Inject
     PlatformUserRepository userRepository;
-
-    @Inject
-    CustomerRepository customerRepository;
 
     @Inject
     InvitationRepository invitationRepository;

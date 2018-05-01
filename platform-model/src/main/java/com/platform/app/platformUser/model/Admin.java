@@ -1,16 +1,9 @@
 package com.platform.app.platformUser.model;
 
-import com.platform.app.platformUser.model.User;
-import com.platform.app.program.model.Program;
-
-import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-import javax.persistence.OneToMany;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity
 @DiscriminatorValue("EMPLOYEE")

@@ -2,17 +2,16 @@ package com.platform.app.commontests.platformUser;
 
 import com.platform.app.common.utils.DateUtils;
 import com.platform.app.common.utils.PasswordUtils;
-import com.platform.app.platformUser.model.*;
+import com.platform.app.platformUser.model.Admin;
+import com.platform.app.platformUser.model.Customer;
+import com.platform.app.platformUser.model.User;
 import com.platform.app.platformUser.model.User.Roles;
 import com.platform.app.platformUser.model.User.UserType;
 import org.junit.Ignore;
 
-import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
-
-import static com.platform.app.commontests.invitation.InvitationForTestsRepository.*;
 
 @Ignore
 public class UserForTestsRepository {
@@ -51,7 +50,6 @@ public class UserForTestsRepository {
         if (user.getUserType() == UserType.EMPLOYEE) {
             admin = (Admin) user;
         }
-        ;
         return admin;
     }
 
@@ -64,7 +62,7 @@ public class UserForTestsRepository {
     }
 
     public static List<Admin> allAdmins() {
-        return Arrays.asList(admin());
+        return Collections.singletonList(admin());
     }
 
     public static User userWithIdAndCreatedAt(final User user, final Long id) {

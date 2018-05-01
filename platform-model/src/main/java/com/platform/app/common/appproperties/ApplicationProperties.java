@@ -1,13 +1,12 @@
 package com.platform.app.common.appproperties;
 
-import java.io.IOException;
-import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.util.Properties;
 
 @ApplicationScoped
 public class ApplicationProperties {
