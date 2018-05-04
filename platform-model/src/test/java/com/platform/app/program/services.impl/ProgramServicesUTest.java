@@ -1,6 +1,8 @@
 package com.platform.app.program.services.impl;
 
 import com.platform.app.common.exception.FieldNotValidException;
+import com.platform.app.invitation.model.Invitation;
+import com.platform.app.invitation.repository.InvitationRepository;
 import com.platform.app.invitation.services.InvitationServices;
 import com.platform.app.platformUser.exception.UserNotFoundException;
 import com.platform.app.platformUser.model.Admin;
@@ -27,6 +29,7 @@ import javax.validation.Validator;
 import java.time.Instant;
 import java.util.*;
 
+import static com.platform.app.commontests.invitation.InvitationForTestsRepository.*;
 import static com.platform.app.commontests.platformUser.UserForTestsRepository.*;
 import static com.platform.app.commontests.program.ApplicationForTestsRepository.app2;
 import static com.platform.app.commontests.program.ApplicationForTestsRepository.appWithId;
@@ -54,6 +57,9 @@ public class ProgramServicesUTest {
     ApplicationRepository applicationRepository;
 
     @Mock
+    InvitationRepository invitationRepository;
+
+    @Mock
     PlatformUserRepository userRepository;
 
     @Before
@@ -68,6 +74,7 @@ public class ProgramServicesUTest {
         ((ProgramServicesImpl) programServices).programRepository = programRepository;
         ((ProgramServicesImpl) programServices).userRepository = userRepository;
         ((ProgramServicesImpl) programServices).invitationServices = invitationServices;
+        ((ProgramServicesImpl) programServices).invitationRepository = invitationRepository;
     }
 
     @Test
@@ -95,8 +102,13 @@ public class ProgramServicesUTest {
     public void deleteProgramCorrect() {
         Program program = programWithId(program1(), 1L);
         when(programRepository.findById(1L)).thenReturn(program);
+        Invitation inv1 = invitationWithId(inv1(), 1L);
+        Invitation inv2 = invitationWithId(inv2(), 2L);
+        when(invitationRepository.findByProgram(program.getId())).thenReturn(Arrays.asList(inv1, inv2));
         programServices.delete(program);
         verify(programRepository).delete(program);
+        verify(invitationRepository).delete(inv1);
+        verify(invitationRepository).delete(inv2);
     }
 
     @Test(expected = ProgramNotFoundException.class)

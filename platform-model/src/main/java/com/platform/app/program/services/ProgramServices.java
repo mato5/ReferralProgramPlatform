@@ -28,6 +28,8 @@ public interface ProgramServices {
 
     List<Program> findByAdmin(User admin);
 
+    List<Program> findByActiveUser(User customer);
+
     List<Program> findAll(String orderfield);
 
     Program findById(Long id);

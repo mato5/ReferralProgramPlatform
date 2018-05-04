@@ -2,6 +2,8 @@ package com.platform.app.program.services.impl;
 
 import com.platform.app.common.exception.FieldNotValidException;
 import com.platform.app.common.utils.ValidationUtils;
+import com.platform.app.invitation.model.Invitation;
+import com.platform.app.invitation.repository.InvitationRepository;
 import com.platform.app.invitation.services.InvitationServices;
 import com.platform.app.platformUser.exception.UserNotFoundException;
 import com.platform.app.platformUser.model.User;
@@ -33,13 +35,16 @@ public class ProgramServicesImpl implements ProgramServices {
     ProgramRepository programRepository;
 
     @Inject
+    InvitationRepository invitationRepository;
+
+    @Inject
     PlatformUserRepository userRepository;
 
     @Inject
-    InvitationServices invitationServices;
+    ApplicationRepository applicationRepository;
 
     @Inject
-    ApplicationRepository applicationRepository;
+    InvitationServices invitationServices;
 
 
     @Inject
@@ -54,9 +59,14 @@ public class ProgramServicesImpl implements ProgramServices {
     @Override
     public void delete(Program program) {
         program = programRepository.findById(program.getId());
-        if (program != null) {
-            programRepository.delete(program);
-        } else throw new ProgramNotFoundException();
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        List<Invitation> invitations = invitationRepository.findByProgram(program.getId());
+        for (Invitation item : invitations) {
+            invitationRepository.delete(item);
+        }
+        programRepository.delete(program);
     }
 
     @Override
@@ -158,6 +168,15 @@ public class ProgramServicesImpl implements ProgramServices {
     }
 
     @Override
+    public List<Program> findByActiveUser(User customer) {
+        customer = userRepository.findById(customer.getId());
+        if (customer == null) {
+            throw new UserNotFoundException();
+        }
+        return programRepository.findByActiveUser(customer);
+    }
+
+    @Override
     public List<Program> findAll(String orderfield) {
         if (orderfield == null) {
             orderfield = "name";
@@ -176,12 +195,20 @@ public class ProgramServicesImpl implements ProgramServices {
 
     @Override
     public Program findByApplication(Application application) {
-        return programRepository.findByApplication(application);
+        Program program = programRepository.findByApplication(application);
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        return program;
     }
 
     @Override
     public Program findByName(String name) {
-        return programRepository.findByName(name);
+        Program program = programRepository.findByName(name);
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        return program;
     }
 
     @Override
@@ -228,6 +255,12 @@ public class ProgramServicesImpl implements ProgramServices {
         }
         if (customer == null) {
             throw new UserNotFoundException();
+        }
+        if (program.getActiveCustomers().contains(customer)) {
+            throw new ProgramServiceException("This user is already participating in the specified program");
+        }
+        if (program.getAdmins().contains(customer)) {
+            throw new ProgramServiceException("This user is the admin of the specified program");
         }
         if (program.getWaitingList().getOrderedIds().contains(customerId)) {
             throw new ProgramServiceException("This waiting list already contains the specified customer.");
@@ -332,7 +365,7 @@ public class ProgramServicesImpl implements ProgramServices {
         if (program.getActiveCustomers().contains(user)) {
             return User.Roles.CUSTOMER;
         }
-        return null;
+        return User.Roles.NONE;
     }
 
     private void validateProgram(Program program) throws FieldNotValidException, ProgramExistentException {

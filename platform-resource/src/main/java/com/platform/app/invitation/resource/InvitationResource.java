@@ -14,6 +14,8 @@ import com.platform.app.invitation.exception.InvitationServiceException;
 import com.platform.app.invitation.model.Invitation;
 import com.platform.app.invitation.services.InvitationServices;
 import com.platform.app.platformUser.exception.UserNotFoundException;
+import com.platform.app.platformUser.model.User;
+import com.platform.app.platformUser.services.PlatformUserServices;
 import com.platform.app.program.exception.ProgramNotFoundException;
 import com.platform.app.program.services.ProgramServices;
 import com.platform.app.user.resource.UserJsonConverter;
@@ -45,6 +47,9 @@ public class InvitationResource {
     ProgramServices programServices;
 
     @Inject
+    PlatformUserServices userServices;
+
+    @Inject
     InvitationJsonConverter invitationJsonConverter;
 
     @Inject
@@ -64,6 +69,10 @@ public class InvitationResource {
     public Response send(String body) {
         logger.debug("Adding a new invitation with body {}", body);
         Invitation invitation = invitationJsonConverter.convertFrom(body);
+
+        if (!userCanInvite(securityContext.getUserPrincipal().getName(), invitation.getProgramId())) {
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
 
         HttpCode httpCode = HttpCode.CREATED;
         OperationResult result;
@@ -93,10 +102,15 @@ public class InvitationResource {
     }
 
     @POST
-    @Path("/program/{id}/{amount}")
+    @Path("/program/{id}/{invitations}")
     @RolesAllowed({"ADMINISTRATOR"})
-    public Response sendInBatch(@PathParam("id") Long id, String body, @PathParam("amount") Integer allowedInvitations) {
+    public Response sendInBatch(@PathParam("id") Long id, String body, @PathParam("invitations") Integer allowedInvitations) {
         logger.debug("Sending invitations in a batch with body {}", body);
+
+        if (!isUserAllowed(securityContext.getUserPrincipal().getName(), id)) {
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
+
         List<String> emails = userJsonConverter.convertEmails(body);
         HttpCode httpCode = HttpCode.CREATED;
         OperationResult result;
@@ -184,6 +198,10 @@ public class InvitationResource {
     public Response findByProgram(@PathParam("id") Long id) {
         logger.debug("Finding invitations by program id: {}", id);
 
+        if (!isUserAllowed(securityContext.getUserPrincipal().getName(), id)) {
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
+
         List<Invitation> invitations = invitationServices.findByProgram(id);
 
         logger.debug("Found {} invitations", invitations.size());
@@ -215,6 +233,11 @@ public class InvitationResource {
     @RolesAllowed({"ADMINISTRATOR"})
     public Response delete(@PathParam("id") Long id) {
         logger.debug("Delete invitation by id: {}", id);
+
+        if (!isUserAllowed(securityContext.getUserPrincipal().getName(), id)) {
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
+
         Response.ResponseBuilder responseBuilder;
         try {
             Invitation invitation = invitationServices.findById(id);
@@ -247,6 +270,9 @@ public class InvitationResource {
         } catch (UserNotFoundException e) {
             logger.error("User not found");
             responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
+        } catch (ProgramNotFoundException e) {
+            logger.error("Program not found");
+            responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
         }
 
         return responseBuilder.build();
@@ -271,9 +297,51 @@ public class InvitationResource {
         } catch (UserNotFoundException e) {
             logger.error("User not found");
             responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
+        } catch (ProgramNotFoundException e) {
+            logger.error("Program not found");
+            responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
         }
 
         return responseBuilder.build();
+    }
+
+    private boolean isLoggedAdmin(String email) {
+        try {
+            User loggerUser = userServices.findByEmail(email);
+            if (loggerUser.getUserType().equals(User.UserType.EMPLOYEE)) {
+                return true;
+            }
+        } catch (UserNotFoundException e) {
+            return false;
+        }
+        return false;
+    }
+
+    private boolean isUserAllowed(String email, Long programId) {
+        try {
+            if (!User.Roles.ADMINISTRATOR.equals(programServices.getUsersRole(email, programId))) {
+                if (!isLoggedAdmin(email)) {
+                    return false;
+                }
+            }
+        } catch (UserNotFoundException | ProgramNotFoundException e) {
+            return false;
+        }
+        return true;
+    }
+
+    private boolean userCanInvite(String email, Long programId) {
+        try {
+            User.Roles role = programServices.getUsersRole(securityContext.getUserPrincipal().getName(), programId);
+            if (role == User.Roles.NONE) {
+                if (!isLoggedAdmin(email)) {
+                    return false;
+                }
+            }
+        } catch (UserNotFoundException | ProgramNotFoundException e) {
+            return false;
+        }
+        return true;
     }
 
 }

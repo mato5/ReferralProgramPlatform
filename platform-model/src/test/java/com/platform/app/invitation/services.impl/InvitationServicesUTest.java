@@ -6,8 +6,8 @@ import com.platform.app.invitation.model.Invitation;
 import com.platform.app.invitation.repository.InvitationRepository;
 import com.platform.app.invitation.services.InvitationServices;
 import com.platform.app.platformUser.exception.UserNotFoundException;
-import com.platform.app.platformUser.model.Admin;
 import com.platform.app.platformUser.model.Customer;
+import com.platform.app.platformUser.model.User;
 import com.platform.app.platformUser.repository.PlatformUserRepository;
 import com.platform.app.program.exception.ProgramNotFoundException;
 import com.platform.app.program.model.Program;
@@ -186,9 +186,14 @@ public class InvitationServicesUTest {
         toBeSent.setInvitationsLeft(0);
         when(userRepository.findById(toBeSent.getByUserId())).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program1(), 1L));
-        when(userRepository.findById(toBeSent.getByUserId())).thenReturn(customerWithIdAndCreatedAt(invitedBy, 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
-
+        Invitation marysInv = new Invitation();
+        marysInv.setByUserId(1L);
+        marysInv.setInvitationsLeft(0);
+        marysInv.setToUserId(2L);
+        marysInv.setProgramId(1L);
+        when(invitationRepository.findByInvitor(2L)).thenReturn(Collections.singletonList(marysInv));
+        when(programServices.getUsersRole(2L, 1L)).thenReturn(User.Roles.CUSTOMER);
         invitationServices.send(toBeSent);
 
     }
@@ -197,13 +202,13 @@ public class InvitationServicesUTest {
     public void sendInBatch() {
         Invitation toBeSent = inv2();
         when(userRepository.findById(3L)).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
-        Admin invitedBy = admin();
+        User invitedBy = userWithIdAndCreatedAt(admin(), 2L);
         when(userRepository.findById(2L)).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(userRepository.findById(3L)).thenReturn(userWithIdAndCreatedAt(johnDoe(), 3L));
         Program program = program1();
         program.setActiveCustomers(new HashSet<>());
+        program.setAdmins(new HashSet<>(Collections.singleton(invitedBy)));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program, 1L));
-        when(userRepository.findById(2L)).thenReturn(customerWithIdAndCreatedAt(mary(), 2L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
         when(userRepository.findByEmail("mary@domain.com")).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
         when(userRepository.findByEmail("john@domain.com")).thenReturn(userWithIdAndCreatedAt(johnDoe(), 3L));
@@ -255,7 +260,6 @@ public class InvitationServicesUTest {
         invitationServices.decline(toBeSent);
 
         verify(invitationRepository).update(eq(toBeSent));
-        verify(programServices).removeCustomer(toBeSent.getToUserId(), toBeSent.getProgramId());
     }
 
     private void sendInvWithInvalidField(final Invitation inv, final String expectedInvalidFieldName) {

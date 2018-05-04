@@ -68,4 +68,11 @@ public class ProgramJsonConverter implements EntityJsonConverter<Program> {
         return jsonObject;
     }
 
+    public JsonElement convertRoleToJson(User.Roles role) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("role", role.name());
+        return jsonObject;
+    }
+
+
 }

@@ -7,8 +7,9 @@ import com.platform.app.common.json.EntityJsonConverter;
 import com.platform.app.common.json.JsonReader;
 import com.platform.app.program.model.WaitingList;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class WaitingListJsonConverter implements EntityJsonConverter<WaitingList> {
 
@@ -17,8 +18,10 @@ public class WaitingListJsonConverter implements EntityJsonConverter<WaitingList
         JsonObject jsonObject = JsonReader.readAsJsonObject(json);
         Gson gson = new Gson();
         WaitingList list = new WaitingList();
-        SortedSet<String> set = gson.fromJson(jsonObject.get("list"), TreeSet.class);
-        list.setList(set);
+        Map<Long, Instant> sortedMap = gson.fromJson(jsonObject.get("list"), LinkedHashMap.class);
+        for (Map.Entry<Long, Instant> entry : sortedMap.entrySet()) {
+            list.subscribe(entry.getKey(), entry.getValue());
+        }
         return list;
     }
 
@@ -26,7 +29,7 @@ public class WaitingListJsonConverter implements EntityJsonConverter<WaitingList
     public JsonElement convertToJsonElement(WaitingList entity) {
         JsonObject jsonObject = new JsonObject();
         Gson gson = new Gson();
-        String sortedJson = gson.toJson(entity.getList());
+        String sortedJson = gson.toJson(entity.getOrderedList());
         jsonObject.addProperty("list", sortedJson);
         return jsonObject;
     }

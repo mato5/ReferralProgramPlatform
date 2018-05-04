@@ -30,6 +30,11 @@ public class WaitingList {
         list.add(item);
     }
 
+    public void subscribe(Long id, Instant subscriptionTime) {
+        String item = subscriptionTime.toString() + "/" + id;
+        list.add(item);
+    }
+
     public List<Long> getOrderedIds() {
         List<Long> ids = new ArrayList<>();
         for (String item : list) {

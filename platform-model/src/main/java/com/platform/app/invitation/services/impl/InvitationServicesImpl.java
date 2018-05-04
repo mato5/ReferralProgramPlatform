@@ -63,7 +63,7 @@ public class InvitationServicesImpl implements InvitationServices {
             throw new InvitationServiceException("This customer is currently participating in this program.");
         }
         if (!invitedTo.getActiveCustomers().contains(invitedBy) && !invitedTo.getAdmins().contains(invitedBy) &&
-                !invitedBy.getUserType().equals(User.UserType.EMPLOYEE)) {
+                invitedBy.getUserType().equals(User.UserType.EMPLOYEE)) {
             throw new InvitationServiceException("This operation is forbidden for the provided users");
         }
         if (User.Roles.CUSTOMER.equals(programServices.getUsersRole(invitedBy.getId(), invitedTo.getId()))) {
@@ -157,14 +157,12 @@ public class InvitationServicesImpl implements InvitationServices {
         if (invitedBy == null) {
             throw new UserNotFoundException();
         }
-        List<Program> invitedToPrograms = programRepository.findByActiveUser(invited);
-        if (invitedToPrograms != null) {
-            for (Program item : invitedToPrograms) {
-                if (inv.getProgramId().equals(item.getId())) {
-                    programServices.removeCustomer(invited.getId(), item.getId());
-                    break;
-                }
-            }
+        Program program = programRepository.findById(inv.getProgramId());
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        if (program.getActiveCustomers().contains(invited)) {
+            programServices.removeCustomer(invited.getId(), program.getId());
         }
         inv.setDeclined(true);
         invitationRepository.update(inv);
