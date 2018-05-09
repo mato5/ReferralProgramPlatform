@@ -113,11 +113,6 @@
     alter table programs
        add constraint UK_4uh20rvftatfys82a9nkvpl0o unique (name);
 
-
-    alter table programs_Application
-       add constraint UK_1ye26vq1vsq92v7tij8pfbyjy unique (activeApplications_apiKey);
-
-
     alter table users
        add constraint UK_6dotkott2kjsp8vw4d0m25fb7 unique (email);
 

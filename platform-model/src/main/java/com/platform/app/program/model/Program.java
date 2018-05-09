@@ -28,7 +28,7 @@ public class Program {
     private Set<User> activeCustomers = new HashSet<>();
     @Embedded
     private WaitingList waitingList = new WaitingList();
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<Application> activeApplications = new HashSet<>();
 
 

@@ -14,6 +14,7 @@ import org.mockito.MockitoAnnotations;
 
 import javax.validation.Validation;
 import javax.validation.Validator;
+import java.util.ArrayList;
 import java.util.UUID;
 
 import static com.platform.app.commontests.program.ApplicationForTestsRepository.*;
@@ -80,7 +81,7 @@ public class ApplicationServicesUTest {
         UUID uid = UUID.fromString("38400000-8cf0-11bd-b23e-10b96e4ef00d");
         Application app = appWithId(app1(), uid);
         when(applicationRepository.findByApiKey(uid)).thenReturn(app);
-        when(programRepository.findByApplication(app)).thenReturn(null);
+        when(programRepository.findByApplication(app)).thenReturn(new ArrayList<>());
         applicationServices.delete(app);
 
         verify(applicationRepository).delete(eq(app));

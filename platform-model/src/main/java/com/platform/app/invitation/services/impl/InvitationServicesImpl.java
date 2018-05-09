@@ -4,6 +4,7 @@ import com.platform.app.common.exception.FieldNotValidException;
 import com.platform.app.common.utils.ValidationUtils;
 import com.platform.app.geoIP.model.GeoIP;
 import com.platform.app.invitation.exception.InvitationExistentException;
+import com.platform.app.invitation.exception.InvitationNotFoundException;
 import com.platform.app.invitation.exception.InvitationServiceException;
 import com.platform.app.invitation.model.Invitation;
 import com.platform.app.invitation.repository.InvitationRepository;
@@ -18,12 +19,14 @@ import com.platform.app.program.services.ProgramServices;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.validation.Validator;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Stateless
+@Transactional
 public class InvitationServicesImpl implements InvitationServices {
 
     @Inject
@@ -63,11 +66,11 @@ public class InvitationServicesImpl implements InvitationServices {
             throw new InvitationServiceException("This customer is currently participating in this program.");
         }
         if (!invitedTo.getActiveCustomers().contains(invitedBy) && !invitedTo.getAdmins().contains(invitedBy) &&
-                invitedBy.getUserType().equals(User.UserType.EMPLOYEE)) {
+                !invitedBy.getUserType().equals(User.UserType.EMPLOYEE)) {
             throw new InvitationServiceException("This operation is forbidden for the provided users");
         }
         if (User.Roles.CUSTOMER.equals(programServices.getUsersRole(invitedBy.getId(), invitedTo.getId()))) {
-            List<Invitation> usersInvitations = invitationRepository.findByInvitor(invitedBy.getId());
+            List<Invitation> usersInvitations = invitationRepository.findByInvitee(invitedBy.getId());
             Invitation lookingFor = null;
             for (Invitation item : usersInvitations) {
                 if (item.getProgramId().equals(invitedTo.getId())) {
@@ -114,10 +117,13 @@ public class InvitationServicesImpl implements InvitationServices {
     public void accept(Invitation inv, GeoIP geoLocation) {
         inv = invitationRepository.findById(inv.getId());
         if (inv == null) {
-            throw new InvitationServiceException("This invitation does not exist");
+            throw new InvitationNotFoundException();
         }
         if (geoLocation == null) {
             throw new InvitationServiceException("The geoLocation does not exist");
+        }
+        if (inv.isDeclined()) {
+            throw new InvitationServiceException("This invitation has already been declined");
         }
         if (inv.getActivated() != null) {
             throw new InvitationServiceException("This invitation has already been accepted");
@@ -144,7 +150,7 @@ public class InvitationServicesImpl implements InvitationServices {
     public void decline(Invitation inv) {
         inv = invitationRepository.findById(inv.getId());
         if (inv == null) {
-            throw new InvitationServiceException("This invitation does not exist");
+            throw new InvitationNotFoundException();
         }
         if (inv.isDeclined()) {
             throw new InvitationServiceException("This invitation has already been declined");
@@ -172,7 +178,7 @@ public class InvitationServicesImpl implements InvitationServices {
     public void delete(Invitation inv) {
         inv = invitationRepository.findById(inv.getId());
         if (inv == null) {
-            throw new InvitationServiceException("The invitation you are trying to delete does not exist.");
+            throw new InvitationNotFoundException();
         }
         invitationRepository.delete(inv);
     }
@@ -181,7 +187,7 @@ public class InvitationServicesImpl implements InvitationServices {
     public Invitation findById(Long id) {
         Invitation inv = invitationRepository.findById(id);
         if (inv == null) {
-            throw new InvitationServiceException("This invitation does not exist");
+            throw new InvitationNotFoundException();
         }
         return inv;
     }
@@ -253,7 +259,7 @@ public class InvitationServicesImpl implements InvitationServices {
     private Invitation sendWithEmail(Invitation invitation, String email) {
         User to = userRepository.findByEmail(email);
         if (to == null) {
-            throw new InvitationServiceException("The user you are trying to invite does not exist");
+            throw new UserNotFoundException();
         }
         invitation.setToUserId(to.getId());
         return send(invitation);

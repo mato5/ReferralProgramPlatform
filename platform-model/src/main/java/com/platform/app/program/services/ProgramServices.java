@@ -34,7 +34,7 @@ public interface ProgramServices {
 
     Program findById(Long id);
 
-    Program findByApplication(Application application);
+    List<Program> findByApplication(Application application);
 
     Program findByName(String name);
 

@@ -5,7 +5,6 @@ import com.platform.app.invitation.model.Invitation;
 
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
-import javax.persistence.NoResultException;
 import javax.persistence.PersistenceContext;
 import java.util.List;
 
@@ -56,16 +55,17 @@ public class InvitationRepository extends GenericRepository<Invitation> {
     }
 
     public boolean alreadyInvited(Long customerId, Long programId) {
-        Invitation inv;
-        try {
-            inv = em.createQuery("Select e from Invitation e where e.toUserId" + " = :propertyValue and e.programId" + " = :progId", Invitation.class)
-                    .setParameter("propertyValue", customerId)
-                    .setParameter("progId", programId)
-                    .getSingleResult();
+        List<Invitation> invitations = em.createQuery("Select e from Invitation e where e.toUserId"
+                + " = :propertyValue and e.programId" + " = :progId", Invitation.class)
+                .setParameter("propertyValue", customerId)
+                .setParameter("progId", programId)
+                .getResultList();
 
-        } catch (NoResultException e) {
-            return false;
+        for (Invitation inv : invitations) {
+            if (inv.getActivated() == null) {
+                return true;
+            }
         }
-        return inv != null && inv.getActivated() == null;
+        return false;
     }
 }

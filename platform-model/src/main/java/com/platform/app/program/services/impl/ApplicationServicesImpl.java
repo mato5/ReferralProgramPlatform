@@ -16,10 +16,12 @@ import com.platform.app.program.services.ApplicationServices;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.validation.Validator;
 import java.util.*;
 
 @Stateless
+@Transactional
 public class ApplicationServicesImpl implements ApplicationServices {
 
     @Inject
@@ -46,10 +48,10 @@ public class ApplicationServicesImpl implements ApplicationServices {
         if (toBeDeleted == null) {
             throw new AppNotFoundException();
         }
-        Program associatedProgram = programRepository.findByApplication(application);
-        if (associatedProgram != null) {
-            associatedProgram.removeApplication(toBeDeleted);
-            programRepository.update(associatedProgram);
+        List<Program> associatedPrograms = programRepository.findByApplication(application);
+        for (Program item : associatedPrograms) {
+            item.removeApplication(toBeDeleted);
+            programRepository.update(item);
         }
         applicationRepository.delete(toBeDeleted);
     }

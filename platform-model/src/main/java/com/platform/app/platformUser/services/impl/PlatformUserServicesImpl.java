@@ -16,10 +16,12 @@ import com.platform.app.platformUser.services.PlatformUserServices;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.validation.Validator;
 import java.util.List;
 
 @Stateless
+@Transactional
 public class PlatformUserServicesImpl implements PlatformUserServices {
 
     @Inject

@@ -10,7 +10,6 @@ import com.platform.app.invitation.model.Invitation;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeParseException;
 
 @ApplicationScoped
 public class InvitationJsonConverter implements EntityJsonConverter<Invitation> {
@@ -26,14 +25,28 @@ public class InvitationJsonConverter implements EntityJsonConverter<Invitation> 
         invitation.setByUserId(JsonReader.getLongOrNull(jsonObject, "byUserId"));
         invitation.setToUserId(JsonReader.getLongOrNull(jsonObject, "toUserId"));
         invitation.setDeclined(Boolean.parseBoolean(JsonReader.getStringOrNull(jsonObject, "declined")));
-        invitation.setInvitationsLeft(JsonReader.getIntegerOrNull(jsonObject, "invitationsLeft"));
-        try {
-            LocalDateTime activated = LocalDateTime.parse((JsonReader.getStringOrNull(jsonObject, "activated")));
-            invitation.setActivated(activated);
-        } catch (DateTimeParseException ex) {
+        String stringForm = JsonReader.getStringOrNull(jsonObject, "activated");
+        if (stringForm == null) {
             invitation.setActivated(null);
+        } else {
+            LocalDateTime activated = LocalDateTime.parse(stringForm);
+            invitation.setActivated(activated);
         }
-        GeoIP location = geoIPJsonConverter.convertFrom(jsonObject.getAsJsonObject("activatedLocation").getAsString());
+        stringForm = JsonReader.getStringOrNull(jsonObject, "sent");
+        if (stringForm == null) {
+            invitation.setSent(null);
+        } else {
+            LocalDateTime sent = LocalDateTime.parse(stringForm);
+            invitation.setSent(sent);
+        }
+        invitation.setInvitationsLeft(JsonReader.getIntegerOrNull(jsonObject, "invitationsLeft"));
+        JsonObject obj = jsonObject.getAsJsonObject("activatedLocation");
+        GeoIP location;
+        if (obj == null) {
+            location = new GeoIP();
+        } else {
+            location = geoIPJsonConverter.convertFrom(obj.getAsString());
+        }
         invitation.setActivatedLocation(location);
         return invitation;
     }
@@ -47,7 +60,11 @@ public class InvitationJsonConverter implements EntityJsonConverter<Invitation> 
         jsonObject.addProperty("toUserId", entity.getToUserId());
         jsonObject.addProperty("declined", entity.isDeclined());
         jsonObject.addProperty("invitationsLeft", entity.getInvitationsLeft());
-        jsonObject.addProperty("activated", entity.getActivated().toString());
+        if (entity.getActivated() != null) {
+            jsonObject.addProperty("activated", entity.getActivated().toString());
+        } else {
+            jsonObject.add("activated", null);
+        }
         jsonObject.add("activatedLocation", geoIPJsonConverter.convertToJsonElement(entity.getActivatedLocation()));
         return jsonObject;
     }

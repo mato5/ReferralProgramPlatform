@@ -34,15 +34,13 @@ public class ProgramRepository extends GenericRepository<Program> {
                 .setParameter("aId", admin.getId()).getResultList();
     }
 
-    public Program findByApplication(Application application) {
+    public List<Program> findByApplication(Application application) {
         String query = "select p from Program p join p.activeApplications a where a.apiKey = :aId";
 
-        try {
-            return em.createQuery(query, Program.class)
-                    .setParameter("aId", application.getApiKey()).getSingleResult();
-        } catch (final NoResultException e) {
-            return null;
-        }
+
+        return em.createQuery(query, Program.class)
+                .setParameter("aId", application.getApiKey()).getResultList();
+
     }
 
     public Program findByName(String name) {

@@ -16,6 +16,9 @@ public class GeoIPJsonConverter implements EntityJsonConverter<GeoIP> {
     public GeoIP convertFrom(String json) {
         JsonObject jsonObject = JsonReader.readAsJsonObject(json);
         GeoIP geoIP = new GeoIP();
+        if (json == null) {
+            return geoIP;
+        }
         geoIP.setCity(JsonReader.getStringOrNull(jsonObject, "city"));
         geoIP.setIpAddress(JsonReader.getStringOrNull(jsonObject, "ipAddress"));
         geoIP.setLatitude(JsonReader.getStringOrNull(jsonObject, "latitude"));
@@ -26,6 +29,9 @@ public class GeoIPJsonConverter implements EntityJsonConverter<GeoIP> {
     @Override
     public JsonElement convertToJsonElement(GeoIP entity) {
         JsonObject jsonObject = new JsonObject();
+        if (entity == null) {
+            return jsonObject;
+        }
         jsonObject.addProperty("city", entity.getCity());
         jsonObject.addProperty("ipAddress", entity.getIpAddress());
         jsonObject.addProperty("latitude", entity.getLatitude());

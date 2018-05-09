@@ -60,6 +60,7 @@ public class ProgramJsonConverter implements EntityJsonConverter<Program> {
     @Override
     public JsonElement convertToJsonElement(Program entity) {
         JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("id", entity.getId());
         jsonObject.addProperty("name", entity.getName());
         jsonObject.add("admins", userJsonConverter.convertToJsonElement(new ArrayList<>(entity.getAdmins())));
         jsonObject.add("activeCustomers", userJsonConverter.convertToJsonElement(new ArrayList<>(entity.getActiveCustomers())));

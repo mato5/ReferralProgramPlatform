@@ -20,6 +20,7 @@ import com.platform.app.program.services.ProgramServices;
 
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.validation.Validator;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -29,6 +30,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Stateless
+@Transactional
 public class ProgramServicesImpl implements ProgramServices {
 
     @Inject
@@ -45,7 +47,6 @@ public class ProgramServicesImpl implements ProgramServices {
 
     @Inject
     InvitationServices invitationServices;
-
 
     @Inject
     Validator validator;
@@ -194,12 +195,12 @@ public class ProgramServicesImpl implements ProgramServices {
     }
 
     @Override
-    public Program findByApplication(Application application) {
-        Program program = programRepository.findByApplication(application);
-        if (program == null) {
+    public List<Program> findByApplication(Application application) {
+        List<Program> programs = programRepository.findByApplication(application);
+        if (programs == null) {
             throw new ProgramNotFoundException();
         }
-        return program;
+        return programs;
     }
 
     @Override
@@ -242,8 +243,12 @@ public class ProgramServicesImpl implements ProgramServices {
         if (!program.getActiveApplications().contains(app)) {
             throw new ProgramServiceException("This program does not contain the application.");
         }
+        List<Program> programsAppUsedIn = programRepository.findByApplication(app);
         program.removeApplication(app);
         programRepository.update(program);
+        if (programsAppUsedIn.size() == 1) {
+            applicationRepository.delete(app);
+        }
     }
 
     @Override

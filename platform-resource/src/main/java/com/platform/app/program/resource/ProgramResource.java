@@ -189,27 +189,28 @@ public class ProgramResource {
     @Path("/application/{apikey}")
     @PermitAll
     public Response findByApplication(@PathParam("apikey") String apiKey) {
-        logger.debug("Finding program by its application");
-        Response.ResponseBuilder responseBuilder;
+        logger.debug("Finding programs by their application");
+        List<Program> programs;
         try {
             UUID id = UUID.fromString(apiKey);
             Application app = applicationServices.findByApiKey(id);
-            Program program = programServices.findByApplication(app);
-            OperationResult result = OperationResult.success(programJsonConverter.convertToJsonElement(program));
-            responseBuilder = Response.status(HttpCode.OK.getCode()).entity(OperationResultJsonWriter.toJson(result));
-            logger.debug("Program found by API key: {}", apiKey);
+            programs = programServices.findByApplication(app);
+            logger.debug("Found {} programs for API key: {}", programs.size(), apiKey);
         } catch (AppNotFoundException e) {
             logger.error("No app found for API key: {}", apiKey);
-            responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
+            return Response.status(HttpCode.NOT_FOUND.getCode()).build();
         } catch (ProgramNotFoundException e) {
             logger.error("No program found for API key: {}", apiKey);
-            responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
+            return Response.status(HttpCode.NOT_FOUND.getCode()).build();
         } catch (IllegalArgumentException e) {
             logger.error("The API key provided is not a correct UUID representation: {}", apiKey);
-            responseBuilder = Response.status(HttpCode.VALIDATION_ERROR.getCode());
+            return Response.status(HttpCode.VALIDATION_ERROR.getCode()).build();
         }
 
-        return responseBuilder.build();
+        JsonElement jsonWithPagingAndEntries = JsonUtils.getJsonElementWithPagingAndEntries(
+                new PaginatedData<Program>(programs.size(), programs), programJsonConverter);
+        return Response.status(HttpCode.OK.getCode()).entity(JsonWriter.writeToString(jsonWithPagingAndEntries))
+                .build();
     }
 
     @GET
@@ -328,8 +329,9 @@ public class ProgramResource {
     public Response removeAdmin(@PathParam("id") Long id, String body) {
         logger.debug("Removing an admin from a program ID: {}", id);
 
+        int trigger = 0;
         if (!isLoggedAdmin(securityContext.getUserPrincipal().getName())) {
-            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+            trigger = 1;
         }
 
         HttpCode httpCode = HttpCode.OK;
@@ -337,6 +339,12 @@ public class ProgramResource {
         try {
             User admin = userJsonConverter.convertFrom(body);
             admin = userServices.findByEmail(admin.getEmail());
+            if (isLoggedUser(admin.getId())) {
+                trigger = 0;
+            }
+            if (trigger == 1) {
+                return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+            }
             programServices.removeAdmin(admin.getId(), id);
             result = OperationResult.success();
         } catch (UserNotFoundException e) {

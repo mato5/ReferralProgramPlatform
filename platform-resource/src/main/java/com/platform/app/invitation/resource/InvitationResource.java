@@ -1,7 +1,10 @@
 package com.platform.app.invitation.resource;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.platform.app.common.exception.FieldNotValidException;
+import com.platform.app.common.json.JsonReader;
 import com.platform.app.common.json.JsonUtils;
 import com.platform.app.common.json.JsonWriter;
 import com.platform.app.common.json.OperationResultJsonWriter;
@@ -10,6 +13,7 @@ import com.platform.app.common.model.OperationResult;
 import com.platform.app.common.model.PaginatedData;
 import com.platform.app.common.model.ResourceMessage;
 import com.platform.app.geoIP.model.GeoIP;
+import com.platform.app.invitation.exception.InvitationNotFoundException;
 import com.platform.app.invitation.exception.InvitationServiceException;
 import com.platform.app.invitation.model.Invitation;
 import com.platform.app.invitation.services.InvitationServices;
@@ -18,7 +22,6 @@ import com.platform.app.platformUser.model.User;
 import com.platform.app.platformUser.services.PlatformUserServices;
 import com.platform.app.program.exception.ProgramNotFoundException;
 import com.platform.app.program.services.ProgramServices;
-import com.platform.app.user.resource.UserJsonConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +29,7 @@ import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.platform.app.common.model.StandardsOperationResults.getOperationResultDependencyNotFound;
@@ -55,9 +59,6 @@ public class InvitationResource {
     @Inject
     GeoIPJsonConverter geoIPJsonConverter;
 
-    @Inject
-    UserJsonConverter userJsonConverter;
-
     @Context
     SecurityContext securityContext;
 
@@ -77,6 +78,8 @@ public class InvitationResource {
         HttpCode httpCode = HttpCode.CREATED;
         OperationResult result;
         try {
+            User invitedBy = userServices.findByEmail(securityContext.getUserPrincipal().getName());
+            invitation.setByUserId(invitedBy.getId());
             invitation = invitationServices.send(invitation);
             result = OperationResult.success(JsonUtils.getJsonElementWithId(invitation.getId()));
         } catch (FieldNotValidException e) {
@@ -102,21 +105,23 @@ public class InvitationResource {
     }
 
     @POST
-    @Path("/program/{id}/{invitations}")
+    @Path("/batch")
     @RolesAllowed({"ADMINISTRATOR"})
-    public Response sendInBatch(@PathParam("id") Long id, String body, @PathParam("invitations") Integer allowedInvitations) {
+    public Response sendInBatch(String body) {
         logger.debug("Sending invitations in a batch with body {}", body);
+        Long programId = getProgramIdFromJson(body);
 
-        if (!isUserAllowed(securityContext.getUserPrincipal().getName(), id)) {
+        if (!isUserAllowed(securityContext.getUserPrincipal().getName(), programId)) {
             return Response.status(HttpCode.FORBIDDEN.getCode()).build();
         }
 
-        List<String> emails = userJsonConverter.convertEmails(body);
+        Integer allowedInvitations = getInvitationsLeft(body);
+        List<String> emails = getEmails(body);
         HttpCode httpCode = HttpCode.CREATED;
         OperationResult result;
         try {
             List<Invitation> invitations = invitationServices.sendInBatch(securityContext.getUserPrincipal().getName(),
-                    id, emails, allowedInvitations);
+                    programId, emails, allowedInvitations);
             result = OperationResult.
                     success(JsonUtils.getJsonElementWithPagingAndEntries(new PaginatedData<>(invitations.size(), invitations),
                             invitationJsonConverter));
@@ -234,10 +239,6 @@ public class InvitationResource {
     public Response delete(@PathParam("id") Long id) {
         logger.debug("Delete invitation by id: {}", id);
 
-        if (!isUserAllowed(securityContext.getUserPrincipal().getName(), id)) {
-            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
-        }
-
         Response.ResponseBuilder responseBuilder;
         try {
             Invitation invitation = invitationServices.findById(id);
@@ -257,10 +258,16 @@ public class InvitationResource {
     @Path("/{id}/decline")
     public Response decline(@PathParam("id") Long id) {
         logger.debug("Decline invitation by id: {}", id);
+
+        if (!userCanAcceptDecline(securityContext.getUserPrincipal().getName(), id)) {
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
+
         Response.ResponseBuilder responseBuilder;
         try {
             Invitation invitation = invitationServices.findById(id);
             invitationServices.decline(invitation);
+            invitation.setDeclined(true);
             OperationResult result = OperationResult.success(invitationJsonConverter.convertToJsonElement(invitation));
             responseBuilder = Response.status(HttpCode.OK.getCode()).entity(OperationResultJsonWriter.toJson(result));
             logger.debug("Invitation decline by id: {}", id);
@@ -282,6 +289,11 @@ public class InvitationResource {
     @Path("/{id}/accept")
     public Response accept(@PathParam("id") Long id, String body) {
         logger.debug("Accept invitation by id: {} location: {}", id, body);
+
+        if (!userCanAcceptDecline(securityContext.getUserPrincipal().getName(), id)) {
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
+
         Response.ResponseBuilder responseBuilder;
         try {
             GeoIP location = geoIPJsonConverter.convertFrom(body);
@@ -342,6 +354,41 @@ public class InvitationResource {
             return false;
         }
         return true;
+    }
+
+    private boolean userCanAcceptDecline(String email, Long invId) {
+        try {
+            User user = userServices.findByEmail(email);
+            Invitation invitation = invitationServices.findById(invId);
+            if (!user.getId().equals(invitation.getToUserId())) {
+                if (!isLoggedAdmin(email)) {
+                    return false;
+                }
+            }
+            return true;
+        } catch (InvitationNotFoundException | UserNotFoundException e) {
+            return false;
+        }
+    }
+
+    private Long getProgramIdFromJson(String body) {
+        final JsonObject jsonObject = JsonReader.readAsJsonObject(body);
+        return JsonReader.getLongOrNull(jsonObject, "programId");
+    }
+
+    private Integer getInvitationsLeft(String body) {
+        final JsonObject jsonObject = JsonReader.readAsJsonObject(body);
+        return JsonReader.getIntegerOrNull(jsonObject, "invitationsLeft");
+    }
+
+    private List<String> getEmails(String body) {
+        final JsonObject jsonObject = JsonReader.readAsJsonObject(body);
+        JsonArray jsonArray = jsonObject.getAsJsonArray("emails");
+        List<String> emails = new ArrayList<>();
+        for (int i = 0; i < jsonArray.size(); i++) {
+            emails.add(jsonArray.get(i).getAsString());
+        }
+        return emails;
     }
 
 }
