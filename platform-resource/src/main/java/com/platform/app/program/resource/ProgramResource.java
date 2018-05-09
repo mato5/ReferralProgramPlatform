@@ -27,7 +27,7 @@ import com.platform.app.user.resource.UserJsonConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.security.RolesAllowed;
+import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
@@ -70,7 +70,7 @@ public class ProgramResource {
 
     @GET
     @Path("/{id}")
-    @RolesAllowed({"ADMINISTRATOR"})
+    @PermitAll
     public Response findById(@PathParam("id") Long id) {
         logger.debug("Find application by id: {}", id);
         Response.ResponseBuilder responseBuilder;
@@ -89,6 +89,7 @@ public class ProgramResource {
 
     @DELETE
     @Path("/{id}")
+    @PermitAll
     public Response delete(@PathParam("id") Long id) {
         logger.debug("Delete program by id: {}", id);
 
@@ -112,6 +113,7 @@ public class ProgramResource {
     }
 
     @POST
+    @PermitAll
     public Response create(String body) {
         logger.debug("Adding a new program with body {}", body);
         Program program = programJsonConverter.convertFrom(body);
@@ -119,8 +121,7 @@ public class ProgramResource {
         HttpCode httpCode = HttpCode.CREATED;
         OperationResult result;
         try {
-            User admin = program.getAdmins().iterator().next();
-            admin = userServices.findByEmail(admin.getEmail());
+            User admin = userServices.findByEmail(securityContext.getUserPrincipal().getName());
             program.setAdmins(new HashSet<>(Collections.singleton(admin)));
             program = programServices.create(program);
             result = OperationResult.success(JsonUtils.getJsonElementWithId(program.getId()));
@@ -143,8 +144,7 @@ public class ProgramResource {
     }
 
     @GET
-    @Path("/all")
-    @RolesAllowed({"ADMINISTRATOR"})
+    @PermitAll
     public Response findAllPrograms() {
         logger.debug("Finding all programs.");
 
@@ -160,8 +160,14 @@ public class ProgramResource {
 
     @GET
     @Path("/admin/{id}")
+    @PermitAll
     public Response findByAdmin(@PathParam("id") Long adminId) {
         logger.debug("Finding all programs by admin ID: {}", adminId);
+        if (!securityContext.isUserInRole(User.Roles.ADMINISTRATOR.name())) {
+            if (!isLoggedUser(adminId)) {
+                return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+            }
+        }
         List<Program> programs;
         try {
             User admin = userServices.findById(adminId);
@@ -181,6 +187,7 @@ public class ProgramResource {
 
     @GET
     @Path("/application/{apikey}")
+    @PermitAll
     public Response findByApplication(@PathParam("apikey") String apiKey) {
         logger.debug("Finding program by its application");
         Response.ResponseBuilder responseBuilder;
@@ -207,6 +214,7 @@ public class ProgramResource {
 
     @GET
     @Path("/name/{name}")
+    @PermitAll
     public Response findByName(@PathParam("name") String name) {
         logger.debug("Finding all programs by name: {}", name);
         Response.ResponseBuilder responseBuilder;
@@ -225,8 +233,16 @@ public class ProgramResource {
 
     @GET
     @Path("/user/{id}")
+    @PermitAll
     public Response findByUser(@PathParam("id") Long id) {
         logger.debug("Finding all programs by user ID: {}", id);
+
+        if (!securityContext.isUserInRole(User.Roles.ADMINISTRATOR.name())) {
+            if (!isLoggedUser(id)) {
+                return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+            }
+        }
+
         List<Program> programs;
         try {
             User customer = userServices.findById(id);
@@ -246,6 +262,7 @@ public class ProgramResource {
 
     @PUT
     @Path("/{id}/name")
+    @PermitAll
     public Response changeName(@PathParam("id") Long id, String body) {
         logger.debug("Changing name of a program ID: {}", id);
 
@@ -273,6 +290,7 @@ public class ProgramResource {
 
     @PUT
     @Path("/{id}/add_admin")
+    @PermitAll
     public Response addAdmin(@PathParam("id") Long id, String body) {
         logger.debug("Adding an admin to a program ID: {}", id);
 
@@ -306,10 +324,11 @@ public class ProgramResource {
 
     @PUT
     @Path("/{id}/remove_admin")
+    @PermitAll
     public Response removeAdmin(@PathParam("id") Long id, String body) {
         logger.debug("Removing an admin from a program ID: {}", id);
 
-        if (!isUserAllowed(securityContext.getUserPrincipal().getName(), id)) {
+        if (!isLoggedAdmin(securityContext.getUserPrincipal().getName())) {
             return Response.status(HttpCode.FORBIDDEN.getCode()).build();
         }
 
@@ -339,6 +358,7 @@ public class ProgramResource {
 
     @PUT
     @Path("/{id}/add_customer")
+    @PermitAll
     public Response addCustomer(@PathParam("id") Long id, String body) {
         logger.debug("Adding a customer to a program ID: {}", id);
 
@@ -372,6 +392,7 @@ public class ProgramResource {
 
     @PUT
     @Path("/{id}/remove_customer")
+    @PermitAll
     public Response removeCustomer(@PathParam("id") Long id, String body) {
         logger.debug("Removing a customer from a program ID: {}", id);
 
@@ -405,6 +426,7 @@ public class ProgramResource {
 
     @PUT
     @Path("/{id}/register")
+    @PermitAll
     public Response registerOnWaitingList(@PathParam("id") Long id) {
         logger.debug("Register on the waiting list of program ID: {}", id);
         Response.ResponseBuilder responseBuilder;
@@ -430,6 +452,7 @@ public class ProgramResource {
 
     @PUT
     @Path("/{id}/unregister")
+    @PermitAll
     public Response unregisterOnWaitingList(@PathParam("id") Long id) {
         logger.debug("Unregister on the waiting list of program ID: {}", id);
         Response.ResponseBuilder responseBuilder;
@@ -454,7 +477,82 @@ public class ProgramResource {
     }
 
     @PUT
+    @Path("/{id}/register_app/{apiKey}")
+    @PermitAll
+    public Response registerApp(@PathParam("id") Long programId, @PathParam("apiKey") String apiKey) {
+        logger.debug("Registering an app to a program ID: {}", programId);
+
+        if (!isUserAllowed(securityContext.getUserPrincipal().getName(), programId)) {
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
+
+        HttpCode httpCode = HttpCode.OK;
+        OperationResult result;
+        try {
+            UUID id = UUID.fromString(apiKey);
+            programServices.registerApplication(id, programId);
+            result = OperationResult.success();
+        } catch (AppNotFoundException e) {
+            httpCode = HttpCode.NOT_FOUND;
+            logger.error("App was not found", e);
+            result = getOperationResultNotFound(new ResourceMessage("App not found"));
+        } catch (ProgramNotFoundException e) {
+            httpCode = HttpCode.NOT_FOUND;
+            logger.error("The program with ID: {} was not found", programId);
+            result = getOperationResultNotFound(RESOURCE_MESSAGE);
+        } catch (ProgramServiceException e) {
+            httpCode = HttpCode.VALIDATION_ERROR;
+            logger.error("This program already contains the specified app {}", apiKey);
+            result = getOperationResultExistent(RESOURCE_MESSAGE, "activeApplications");
+        } catch (IllegalArgumentException e) {
+            logger.error("The API key provided is not a correct UUID representation: {}", apiKey);
+            httpCode = HttpCode.NOT_FOUND;
+            result = getOperationResultNotFound(new ResourceMessage("App not found"));
+        }
+        logger.debug("Returning the operation result after registering program application: {}", result);
+        return Response.status(httpCode.getCode()).entity(OperationResultJsonWriter.toJson(result)).build();
+    }
+
+    @PUT
+    @Path("/{id}/unregister_app/{apiKey}")
+    @PermitAll
+    public Response unregisterApp(@PathParam("id") Long programId, @PathParam("apiKey") String apiKey) {
+        logger.debug("Registering an app to a program ID: {}", programId);
+
+        if (!isUserAllowed(securityContext.getUserPrincipal().getName(), programId)) {
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
+
+        HttpCode httpCode = HttpCode.OK;
+        OperationResult result;
+        try {
+            UUID id = UUID.fromString(apiKey);
+            programServices.unregisterApplication(id, programId);
+            result = OperationResult.success();
+        } catch (AppNotFoundException e) {
+            httpCode = HttpCode.NOT_FOUND;
+            logger.error("App was not found", e);
+            result = getOperationResultNotFound(new ResourceMessage("App not found"));
+        } catch (ProgramNotFoundException e) {
+            httpCode = HttpCode.NOT_FOUND;
+            logger.error("The program with ID: {} was not found", programId);
+            result = getOperationResultNotFound(RESOURCE_MESSAGE);
+        } catch (ProgramServiceException e) {
+            httpCode = HttpCode.VALIDATION_ERROR;
+            logger.error("This program does not contain the specified app {}", apiKey);
+            result = getOperationResultExistent(RESOURCE_MESSAGE, "activeApplications");
+        } catch (IllegalArgumentException e) {
+            logger.error("The API key provided is not a correct UUID representation: {}", apiKey);
+            httpCode = HttpCode.NOT_FOUND;
+            result = getOperationResultNotFound(new ResourceMessage("App not found"));
+        }
+        logger.debug("Returning the operation result after unregistering program application: {}", result);
+        return Response.status(httpCode.getCode()).entity(OperationResultJsonWriter.toJson(result)).build();
+    }
+
+    @PUT
     @Path("/{id}/invite_waitinglist/{amount}")
+    @PermitAll
     public Response inviteFromWaitingList(@PathParam("id") Long id, @PathParam("amount") Integer allowedInvitations, String body) {
         logger.debug("Inviting from a waiting list of program ID: {}", id);
 
@@ -490,14 +588,15 @@ public class ProgramResource {
         return Response.status(httpCode.getCode()).entity(OperationResultJsonWriter.toJson(result)).build();
     }
 
-    @GET
+    @PUT
     @Path("/{name}/role")
+    @PermitAll
     public Response getUsersRole(@PathParam("name") String programName, String body) {
         logger.debug("Get users role in program name: {}", programName);
         Response.ResponseBuilder responseBuilder;
         User.Roles role;
         try {
-            User user = userServices.findByEmail(body);
+            User user = userServices.findByEmail(getEmailFromJson(body));
             Program program = programServices.findByName(programName);
             role = programServices.getUsersRole(user, program);
             logger.debug("Role found for program name: {}", programName);
@@ -540,9 +639,25 @@ public class ProgramResource {
         return true;
     }
 
+    private boolean isLoggedUser(final Long id) {
+        try {
+            final User loggerUser = userServices.findByEmail(securityContext.getUserPrincipal().getName());
+            if (loggerUser.getId().equals(id)) {
+                return true;
+            }
+        } catch (final UserNotFoundException e) {
+        }
+        return false;
+    }
+
 
     private String getNameFromJson(final String body) {
         final JsonObject jsonObject = JsonReader.readAsJsonObject(body);
         return JsonReader.getStringOrNull(jsonObject, "name");
+    }
+
+    private String getEmailFromJson(final String body) {
+        final JsonObject jsonObject = JsonReader.readAsJsonObject(body);
+        return JsonReader.getStringOrNull(jsonObject, "email");
     }
 }

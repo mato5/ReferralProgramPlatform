@@ -1,5 +1,8 @@
 package com.platform.app.program.exception;
 
+import javax.ejb.ApplicationException;
+
+@ApplicationException
 public class AppServiceException extends RuntimeException {
 
     public AppServiceException() {
@@ -7,7 +10,7 @@ public class AppServiceException extends RuntimeException {
     }
 
     public AppServiceException(String message, Throwable cause,
-                                   boolean enableSuppression, boolean writableStackTrace) {
+                               boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

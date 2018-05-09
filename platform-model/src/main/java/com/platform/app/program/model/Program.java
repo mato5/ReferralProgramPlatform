@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
+@Table(name = "programs")
 public class Program {
 
     @Id
@@ -19,15 +20,15 @@ public class Program {
     @Column(unique = true)
     private String name;
     @Size(min = 1)
-    @ManyToMany(cascade = {CascadeType.MERGE})
-    @JoinTable(name = "PROGRAM_ADMIN", joinColumns = @JoinColumn(name = "PROGRAM_ID"),
+    @ManyToMany(fetch = FetchType.EAGER, cascade = {CascadeType.MERGE})
+    @JoinTable(name = "PROGRAM_ADMIN", joinColumns = @JoinColumn(name = "PROGRAMS_ID"),
             inverseJoinColumns = @JoinColumn(name = "ADMIN_ID"))
     private Set<User> admins = new HashSet<>();
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private Set<User> activeCustomers = new HashSet<>();
     @Embedded
     private WaitingList waitingList = new WaitingList();
-    @OneToMany(cascade = CascadeType.MERGE)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     private Set<Application> activeApplications = new HashSet<>();
 
 

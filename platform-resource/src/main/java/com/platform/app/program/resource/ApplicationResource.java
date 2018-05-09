@@ -11,6 +11,9 @@ import com.platform.app.common.model.HttpCode;
 import com.platform.app.common.model.OperationResult;
 import com.platform.app.common.model.PaginatedData;
 import com.platform.app.common.model.ResourceMessage;
+import com.platform.app.platformUser.exception.UserNotFoundException;
+import com.platform.app.platformUser.model.User;
+import com.platform.app.platformUser.services.PlatformUserServices;
 import com.platform.app.program.exception.AppExistentException;
 import com.platform.app.program.exception.AppNotFoundException;
 import com.platform.app.program.exception.AppServiceException;
@@ -39,6 +42,9 @@ public class ApplicationResource {
 
     @Inject
     ApplicationServices applicationServices;
+
+    @Inject
+    PlatformUserServices userServices;
 
     @Inject
     ApplicationJsonConverter applicationJsonConverter;
@@ -75,12 +81,14 @@ public class ApplicationResource {
 
     @DELETE
     @Path("/{id}")
-    @RolesAllowed({"ADMINISTRATOR"})
     public Response delete(@PathParam("id") String id) {
         logger.debug("Delete application by id: {}", id);
         Response.ResponseBuilder responseBuilder;
         try {
             UUID uuid = UUID.fromString(id);
+            if (!isUserAllowed(securityContext.getUserPrincipal().getName(), uuid)) {
+                return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+            }
             Application app = applicationServices.findByApiKey(uuid);
             applicationServices.delete(app);
             OperationResult result = OperationResult.success(applicationJsonConverter.convertToJsonElement(app));
@@ -98,7 +106,6 @@ public class ApplicationResource {
     }
 
     @GET
-    @Path("/all")
     @RolesAllowed({"ADMINISTRATOR"})
     public Response findAllApps() {
         logger.debug("Finding all applications.");
@@ -114,6 +121,32 @@ public class ApplicationResource {
     }
 
     @GET
+    @Path("/user/{id}")
+    public Response findAllAppsOfUser(@PathParam("id") Long userId) {
+        logger.debug("Finding all applications of user ID: {}", userId);
+
+        if (!isLoggedUser(userId) && !isLoggedAdmin(securityContext.getUserPrincipal().getName())) {
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
+
+        List<Application> apps;
+        try {
+            apps = applicationServices.findAllAppsOfUser(userId);
+            logger.debug("Found {} applications", apps.size());
+        } catch (UserNotFoundException e) {
+            logger.error("No user found for id: {}", userId);
+            OperationResult result = OperationResult
+                    .error("User not found", "No user found for ID:" + userId);
+            return Response.status(HttpCode.NOT_FOUND.getCode()).entity(OperationResultJsonWriter.toJson(result)).build();
+        }
+
+        JsonElement jsonWithPagingAndEntries = JsonUtils.getJsonElementWithPagingAndEntries(
+                new PaginatedData<Application>(apps.size(), apps), applicationJsonConverter);
+        return Response.status(HttpCode.OK.getCode()).entity(JsonWriter.writeToString(jsonWithPagingAndEntries))
+                .build();
+    }
+
+    @GET
     @Path("/{id}")
     @RolesAllowed({"ADMINISTRATOR"})
     public Response findById(@PathParam("id") final String id) {
@@ -121,6 +154,9 @@ public class ApplicationResource {
         Response.ResponseBuilder responseBuilder;
         try {
             UUID uuid = UUID.fromString(id);
+            if (!isUserAllowed(securityContext.getUserPrincipal().getName(), uuid)) {
+                return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+            }
             Application application = applicationServices.findByApiKey(uuid);
             OperationResult result = OperationResult.success(applicationJsonConverter.convertToJsonElement(application));
             responseBuilder = Response.status(HttpCode.OK.getCode()).entity(OperationResultJsonWriter.toJson(result));
@@ -136,9 +172,8 @@ public class ApplicationResource {
         return responseBuilder.build();
     }
 
-    @GET
+    @PUT
     @Path("/url")
-    @RolesAllowed({"ADMINISTRATOR"})
     public Response findByUrl(String body) {
         logger.debug("Find invitation by URL: {}", body);
         Response.ResponseBuilder responseBuilder;
@@ -157,11 +192,10 @@ public class ApplicationResource {
 
     @GET
     @Path("/name/{name}")
-    @RolesAllowed({"ADMINISTRATOR"})
-    public Response findByName(@PathParam("name") String body) {
-        logger.debug("Finding all applications with a name: {}", body);
+    public Response findByName(@PathParam("name") String appName) {
+        logger.debug("Finding all applications with a name: {}", appName);
 
-        List<Application> apps = applicationServices.findByName(getNameFromJson(body));
+        List<Application> apps = applicationServices.findByName(appName);
 
         logger.debug("Found {} applications", apps.size());
 
@@ -178,6 +212,9 @@ public class ApplicationResource {
         HttpCode httpCode = HttpCode.OK;
         OperationResult result;
         try {
+            if (!isUserAllowed(securityContext.getUserPrincipal().getName(), UUID.fromString(uuid))) {
+                return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+            }
             applicationServices.changeName(getNameFromJson(body), UUID.fromString(uuid));
             result = OperationResult.success();
         } catch (final AppNotFoundException e) {
@@ -204,6 +241,9 @@ public class ApplicationResource {
         HttpCode httpCode = HttpCode.OK;
         OperationResult result;
         try {
+            if (!isUserAllowed(securityContext.getUserPrincipal().getName(), UUID.fromString(uuid))) {
+                return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+            }
             applicationServices.changeDescription(getDescriptionFromJson(body), UUID.fromString(uuid));
             result = OperationResult.success();
         } catch (final AppNotFoundException e) {
@@ -226,6 +266,9 @@ public class ApplicationResource {
         HttpCode httpCode = HttpCode.OK;
         OperationResult result;
         try {
+            if (!isUserAllowed(securityContext.getUserPrincipal().getName(), UUID.fromString(uuid))) {
+                return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+            }
             applicationServices.changeURL(getURLFromJson(body), UUID.fromString(uuid));
             result = OperationResult.success();
         } catch (final AppNotFoundException e) {
@@ -252,6 +295,9 @@ public class ApplicationResource {
         HttpCode httpCode = HttpCode.OK;
         OperationResult result;
         try {
+            if (!isUserAllowed(securityContext.getUserPrincipal().getName(), UUID.fromString(uuid))) {
+                return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+            }
             applicationServices.changeInvitationURL(getInvitationURLFromJson(body), UUID.fromString(uuid));
             result = OperationResult.success();
         } catch (final AppNotFoundException e) {
@@ -289,6 +335,43 @@ public class ApplicationResource {
     private String getInvitationURLFromJson(final String body) {
         final JsonObject jsonObject = JsonReader.readAsJsonObject(body);
         return JsonReader.getStringOrNull(jsonObject, "invitationURL");
+    }
+
+    private boolean isLoggedAdmin(String email) {
+        try {
+            User loggerUser = userServices.findByEmail(email);
+            if (loggerUser.getUserType().equals(User.UserType.EMPLOYEE)) {
+                return true;
+            }
+        } catch (UserNotFoundException e) {
+            return false;
+        }
+        return false;
+    }
+
+    private boolean isUserAllowed(String email, UUID appId) {
+        List<Application> apps;
+        if (isLoggedAdmin(email)) {
+            return true;
+        }
+        try {
+            User user = userServices.findByEmail(email);
+            apps = applicationServices.findAllAppsOfUser(user.getId());
+        } catch (UserNotFoundException e) {
+            return false;
+        }
+        return apps.stream().map(Application::getApiKey).anyMatch(o -> o.equals(appId));
+    }
+
+    private boolean isLoggedUser(final Long id) {
+        try {
+            final User loggerUser = userServices.findByEmail(securityContext.getUserPrincipal().getName());
+            if (loggerUser.getId().equals(id)) {
+                return true;
+            }
+        } catch (final UserNotFoundException e) {
+        }
+        return false;
     }
 
 

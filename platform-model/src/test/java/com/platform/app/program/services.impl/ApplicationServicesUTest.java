@@ -5,6 +5,7 @@ import com.platform.app.program.exception.AppNotFoundException;
 import com.platform.app.program.exception.AppServiceException;
 import com.platform.app.program.model.Application;
 import com.platform.app.program.repository.ApplicationRepository;
+import com.platform.app.program.repository.ProgramRepository;
 import com.platform.app.program.services.ApplicationServices;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,6 +32,9 @@ public class ApplicationServicesUTest {
     @Mock
     ApplicationRepository applicationRepository;
 
+    @Mock
+    ProgramRepository programRepository;
+
     @Before
     public void initTestCase() {
         validator = Validation.buildDefaultValidatorFactory().getValidator();
@@ -39,6 +43,7 @@ public class ApplicationServicesUTest {
 
         applicationServices = new ApplicationServicesImpl();
         ((ApplicationServicesImpl) applicationServices).applicationRepository = applicationRepository;
+        ((ApplicationServicesImpl) applicationServices).programRepository = programRepository;
         ((ApplicationServicesImpl) applicationServices).validator = validator;
     }
 
@@ -75,7 +80,7 @@ public class ApplicationServicesUTest {
         UUID uid = UUID.fromString("38400000-8cf0-11bd-b23e-10b96e4ef00d");
         Application app = appWithId(app1(), uid);
         when(applicationRepository.findByApiKey(uid)).thenReturn(app);
-
+        when(programRepository.findByApplication(app)).thenReturn(null);
         applicationServices.delete(app);
 
         verify(applicationRepository).delete(eq(app));

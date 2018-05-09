@@ -2,22 +2,34 @@ package com.platform.app.program.services.impl;
 
 import com.platform.app.common.exception.FieldNotValidException;
 import com.platform.app.common.utils.ValidationUtils;
+import com.platform.app.platformUser.exception.UserNotFoundException;
+import com.platform.app.platformUser.model.User;
+import com.platform.app.platformUser.repository.PlatformUserRepository;
 import com.platform.app.program.exception.AppExistentException;
 import com.platform.app.program.exception.AppNotFoundException;
 import com.platform.app.program.exception.AppServiceException;
 import com.platform.app.program.model.Application;
+import com.platform.app.program.model.Program;
 import com.platform.app.program.repository.ApplicationRepository;
+import com.platform.app.program.repository.ProgramRepository;
 import com.platform.app.program.services.ApplicationServices;
 
+import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.validation.Validator;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
+@Stateless
 public class ApplicationServicesImpl implements ApplicationServices {
 
     @Inject
     ApplicationRepository applicationRepository;
+
+    @Inject
+    PlatformUserRepository userRepository;
+
+    @Inject
+    ProgramRepository programRepository;
 
     @Inject
     Validator validator;
@@ -33,6 +45,11 @@ public class ApplicationServicesImpl implements ApplicationServices {
         Application toBeDeleted = applicationRepository.findByApiKey(application.getApiKey());
         if (toBeDeleted == null) {
             throw new AppNotFoundException();
+        }
+        Program associatedProgram = programRepository.findByApplication(application);
+        if (associatedProgram != null) {
+            associatedProgram.removeApplication(toBeDeleted);
+            programRepository.update(associatedProgram);
         }
         applicationRepository.delete(toBeDeleted);
     }
@@ -113,8 +130,22 @@ public class ApplicationServicesImpl implements ApplicationServices {
         if (applicationRepository.findByInvURL(invitationURL) != null) {
             throw new AppServiceException("This InvitationURL is already used by an application");
         }
-        application.setURL(invitationURL);
+        application.setInvitationURL(invitationURL);
         applicationRepository.update(application);
+    }
+
+    @Override
+    public List<Application> findAllAppsOfUser(Long userId) {
+        User admin = userRepository.findById(userId);
+        if (admin == null) {
+            throw new UserNotFoundException();
+        }
+        List<Program> programs = programRepository.findByAdmin(admin);
+        Set<Application> apps = new HashSet<>();
+        for (Program program : programs) {
+            apps.addAll(program.getActiveApplications());
+        }
+        return new ArrayList<>(apps);
     }
 
     private void validateApp(Application app) throws FieldNotValidException, AppExistentException {

@@ -11,6 +11,7 @@ import java.util.List;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "type")
+@Table(name = "users")
 public abstract class User implements Serializable {
     private static final long serialVersionUID = 1050881026659874901L;
 
@@ -33,6 +34,7 @@ public abstract class User implements Serializable {
     private String email;
 
     @NotNull
+    @Column(name = "passwd")
     private String password;
 
     public enum Roles {

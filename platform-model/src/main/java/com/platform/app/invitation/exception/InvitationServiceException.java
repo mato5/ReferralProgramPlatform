@@ -1,5 +1,8 @@
 package com.platform.app.invitation.exception;
 
+import javax.ejb.ApplicationException;
+
+@ApplicationException
 public class InvitationServiceException extends RuntimeException {
 
     public InvitationServiceException() {
@@ -7,7 +10,7 @@ public class InvitationServiceException extends RuntimeException {
     }
 
     public InvitationServiceException(String message, Throwable cause,
-                                boolean enableSuppression, boolean writableStackTrace) {
+                                      boolean enableSuppression, boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
 

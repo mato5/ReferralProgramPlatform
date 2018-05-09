@@ -65,6 +65,6 @@ public class ProgramRepository extends GenericRepository<Program> {
     }
 
     public boolean alreadyExists(Program program) {
-        return alreadyExists("name", program.getName(), program.getId());
+        return alreadyExists("name", program.getName(), null);
     }
 }

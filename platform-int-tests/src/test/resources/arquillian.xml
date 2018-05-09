@@ -11,7 +11,7 @@
 
 	<container qualifier="wildfly" default="true">
 		<configuration>
-			<property name="jbossHome">D:\Bakalarka\platform-app\wildfly-11.0.0.Final</property>
+            <property name="jbossHome">target/wildfly-run/wildfly-12.0.0.Final</property>
 			<property name="serverConfig">standalone-full.xml</property>
 			<property name="javaVmArguments">-Xmx512m -Djava.util.logging.manager=org.jboss.logmanager.LogManager</property>
 		</configuration>

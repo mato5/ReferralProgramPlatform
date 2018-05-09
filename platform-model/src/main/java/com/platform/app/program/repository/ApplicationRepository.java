@@ -27,7 +27,8 @@ public class ApplicationRepository extends GenericRepository<Application> {
     }
 
     public boolean alreadyExists(Application application) {
-        return alreadyExists("URL", application.getURL(), null);
+        return alreadyExists("URL", application.getURL(), null)
+                || alreadyExists("invitationURL", application.getInvitationURL(), null);
     }
 
     public Application findByApiKey(UUID key) {

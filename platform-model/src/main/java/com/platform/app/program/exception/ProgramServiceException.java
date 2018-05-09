@@ -1,5 +1,8 @@
 package com.platform.app.program.exception;
 
+import javax.ejb.ApplicationException;
+
+@ApplicationException
 public class ProgramServiceException extends RuntimeException {
 
     public ProgramServiceException() {

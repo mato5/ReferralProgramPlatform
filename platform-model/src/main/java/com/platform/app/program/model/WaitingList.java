@@ -2,6 +2,7 @@ package com.platform.app.program.model;
 
 import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
+import javax.persistence.FetchType;
 import javax.persistence.OrderBy;
 import java.time.Instant;
 import java.util.*;
@@ -12,7 +13,7 @@ import java.util.*;
 @Embeddable
 public class WaitingList {
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @OrderBy
     private SortedSet<String> list = new TreeSet<>(TimeComparator);
 

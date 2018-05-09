@@ -7,20 +7,28 @@ import com.platform.app.common.json.EntityJsonConverter;
 import com.platform.app.common.json.JsonReader;
 import com.platform.app.program.model.WaitingList;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@ApplicationScoped
 public class WaitingListJsonConverter implements EntityJsonConverter<WaitingList> {
 
     @Override
     public WaitingList convertFrom(String json) {
+        if (json == null) {
+            return new WaitingList();
+        }
         JsonObject jsonObject = JsonReader.readAsJsonObject(json);
         Gson gson = new Gson();
         WaitingList list = new WaitingList();
-        Map<Long, Instant> sortedMap = gson.fromJson(jsonObject.get("list"), LinkedHashMap.class);
-        for (Map.Entry<Long, Instant> entry : sortedMap.entrySet()) {
-            list.subscribe(entry.getKey(), entry.getValue());
+        Map<Long, LocalDateTime> sortedMap = gson.fromJson(jsonObject.get("list"), LinkedHashMap.class);
+        for (Map.Entry<Long, LocalDateTime> entry : sortedMap.entrySet()) {
+            Instant instant = entry.getValue().atZone(ZoneId.systemDefault()).toInstant();
+            list.subscribe(entry.getKey(), instant);
         }
         return list;
     }
@@ -29,7 +37,12 @@ public class WaitingListJsonConverter implements EntityJsonConverter<WaitingList
     public JsonElement convertToJsonElement(WaitingList entity) {
         JsonObject jsonObject = new JsonObject();
         Gson gson = new Gson();
-        String sortedJson = gson.toJson(entity.getOrderedList());
+        Map<Long, LocalDateTime> result = new LinkedHashMap<>();
+        for (Map.Entry<Long, Instant> entry : entity.getOrderedList().entrySet()) {
+            LocalDateTime subscriptionTime = LocalDateTime.ofInstant(entry.getValue(), ZoneId.systemDefault());
+            result.put(entry.getKey(), subscriptionTime);
+        }
+        String sortedJson = gson.toJson(result);
         jsonObject.addProperty("list", sortedJson);
         return jsonObject;
     }

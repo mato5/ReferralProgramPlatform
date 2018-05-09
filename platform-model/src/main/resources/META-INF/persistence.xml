@@ -5,9 +5,13 @@
 
 	<persistence-unit name="platformPULive" transaction-type="JTA">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-		<jta-data-source>java:jboss/datasources/platform</jta-data-source>
+        <jta-data-source>java:jboss/datasources/platformDS</jta-data-source>
 		<properties>
-			<property name="hibernate.show_sql" value="false" />
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL94Dialect"/>
+            <property name="javax.persistence.schema-generation.scripts.action" value="drop-and-create"/>
+            <property name="javax.persistence.schema-generation.scripts.create-target" value="./create.sql"/>
+            <property name="javax.persistence.schema-generation.scripts.drop-target" value="./drop.sql"/>
 		</properties>
 	</persistence-unit>
 

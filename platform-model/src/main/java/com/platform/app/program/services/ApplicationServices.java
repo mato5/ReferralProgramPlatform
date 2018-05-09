@@ -28,4 +28,6 @@ public interface ApplicationServices {
     void changeURL(String URL, UUID apiKey);
 
     void changeInvitationURL(String invitationURL, UUID apiKey);
+
+    List<Application> findAllAppsOfUser(Long userId);
 }

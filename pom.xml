@@ -28,7 +28,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.20.1</version>
+                    <version>2.21.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -38,7 +38,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-ear-plugin</artifactId>
-                    <version>2.10.1</version>
+                    <version>3.0.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -66,22 +66,30 @@
                 <groupId>org.wildfly.plugins</groupId>
                 <artifactId>wildfly-maven-plugin</artifactId>
                 <version>1.2.1.Final</version>
-                <configuration>
-                    <jboss-home>wildfly-11.0.0.Final</jboss-home>
-                </configuration>
-                <!--<executions>-->
-                <!--&lt;!&ndash; Undeploy the application on clean &ndash;&gt;-->
-                <!--<execution>-->
-                <!--<id>undeploy</id>-->
-                <!--<phase>clean</phase>-->
-                <!--<goals>-->
-                <!--<goal>undeploy</goal>-->
-                <!--</goals>-->
                 <!--<configuration>-->
-                <!--<ignoreMissingDeployment>true</ignoreMissingDeployment>-->
+                <!--<jbossHome>wildfly-12.0.0.Final</jbossHome>-->
+                <!--<beforeDeployment>-->
+                <!--<commands>-->
+                <!--<command>module add &#45;&#45;name=org.postgre &#45;&#45;resources=${settings.localRepository}/org/postgresql/postgresql/42.2.2/postgresql-42.2.2.jar &#45;&#45;dependencies=javax.api,javax.transaction.api</command>-->
+                <!--<command>/subsystem=datasources/jdbc-driver=postgre: add( driver-name="postgre", driver-module-name="org.postgre")</command>-->
+                <!--<command>/subsystem=datasources/data-source=platformDS: add( jndi-name="java:jboss/platformDS", driver-name=postgre, connection-url="jdbc:postgresql://localhost/myDatabase", user-name="dbuser", password="supersecret")</command>-->
+                <!--</commands>-->
+                <!--</beforeDeployment>-->
                 <!--</configuration>-->
-                <!--</execution>-->
-                <!--&lt;!&ndash; Deploy the application on install &ndash;&gt;-->
+
+                <!--&lt;!&ndash;&lt;!&ndash; Undeploy the application on clean &ndash;&gt;&ndash;&gt;-->
+                <!--&lt;!&ndash;<execution>&ndash;&gt;-->
+                <!--&lt;!&ndash;<id>undeploy</id>&ndash;&gt;-->
+                <!--&lt;!&ndash;<phase>clean</phase>&ndash;&gt;-->
+                <!--&lt;!&ndash;<goals>&ndash;&gt;-->
+                <!--&lt;!&ndash;<goal>undeploy</goal>&ndash;&gt;-->
+                <!--&lt;!&ndash;</goals>&ndash;&gt;-->
+                <!--&lt;!&ndash;<configuration>&ndash;&gt;-->
+                <!--&lt;!&ndash;<ignoreMissingDeployment>true</ignoreMissingDeployment>&ndash;&gt;-->
+                <!--&lt;!&ndash;</configuration>&ndash;&gt;-->
+                <!--&lt;!&ndash;</execution>&ndash;&gt;-->
+                <!-- Deploy the application on install -->
+                <!--<executions>-->
                 <!--<execution>-->
                 <!--<id>deploy</id>-->
                 <!--<phase>install</phase>-->
@@ -199,6 +207,12 @@
             <version>1.7.25</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>42.2.2</version>
+        </dependency>
+
     </dependencies>
 
     <modules>
