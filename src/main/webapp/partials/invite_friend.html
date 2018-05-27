@@ -1,0 +1,33 @@
+<div class="col-md-6 col-md-offset-3">
+    <h2><strong>Invite a user</strong></h2>
+    <div ng-show="(vm.invLeft != '-1') && (vm.invLeft != '0')" class="alert alert-warning">
+        <strong>Warning!</strong> You are inviting a specific user but you only have a limited amount of invitations
+        that you can send <br>
+        <strong>Invitations left: </strong> {{vm.invLeft}}
+    </div>
+    <div ng-show="(vm.invLeft == '0')" class="alert alert-danger">
+        <strong>Warning!</strong> You are trying to invite a specific user but you have no invitations left <br>
+        <strong>Invitations left: </strong> {{vm.invLeft}}
+    </div>
+    <div ng-show="vm.invLeft == '-1'" class="alert alert-info">
+        <strong>Info!</strong> You are inviting a specific user and as an admin you have no limit on how many
+        invitations you can send <br>
+    </div>
+    <form name="form" ng-submit="vm.invite()" role="form">
+        <div class="form-group" ng-class="{ 'has-error': form.email.$dirty && form.email.$invalid}">
+            <label for="email">E-mail</label>
+            <input type="email" name="email" id="email" class="form-control" ng-model="vm.email" email-used
+                   ng-model-options="{ debounce: 500 }" ng-minlength="3" ng-maxlength="70" required/>
+            <!--<span ng-show="form.email.$dirty && form.email.$invalid" class="help-block">E-mail is required, 3-70 characters</span>-->
+            <span ng-show="form.email.$dirty && form.email.$invalid" class="help-block">This e-mail is either invalid or does not exist</span>
+        </div>
+        <div class="form-actions">
+            <button type="submit" ng-disabled="form.$invalid || vm.dataLoading || (vm.invLeft == '0')"
+                    class="btn btn-primary">Invite
+            </button>
+            <img ng-if="vm.dataLoading"
+                 src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA=="/>
+            <a href="#!/programs/{{vm.inv.programId}}" class="btn btn-link">Cancel</a>
+        </div>
+    </form>
+</div>

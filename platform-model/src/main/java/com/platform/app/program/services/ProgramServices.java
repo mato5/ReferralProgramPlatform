@@ -30,6 +30,8 @@ public interface ProgramServices {
 
     List<Program> findByActiveUser(User customer);
 
+    List<Program> findByWaitingCustomer(Long customerId);
+
     List<Program> findAll(String orderfield);
 
     Program findById(Long id);

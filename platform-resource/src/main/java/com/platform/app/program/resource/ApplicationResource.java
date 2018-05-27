@@ -22,6 +22,7 @@ import com.platform.app.program.services.ApplicationServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -81,6 +82,7 @@ public class ApplicationResource {
 
     @DELETE
     @Path("/{id}")
+    @PermitAll
     public Response delete(@PathParam("id") String id) {
         logger.debug("Delete application by id: {}", id);
         Response.ResponseBuilder responseBuilder;
@@ -122,6 +124,7 @@ public class ApplicationResource {
 
     @GET
     @Path("/user/{id}")
+    @PermitAll
     public Response findAllAppsOfUser(@PathParam("id") Long userId) {
         logger.debug("Finding all applications of user ID: {}", userId);
 

@@ -11,6 +11,8 @@ public interface InvitationServices {
 
     Invitation send(Invitation inv);
 
+    int findInvitationsLeft(Long userId, Long programId);
+
     List<Invitation> sendInBatch(Long byUserId, Long programId, List<String> emails, Integer allowedInvitations);
 
     List<Invitation> sendInBatch(String email, Long programId, List<String> emails, Integer allowedInvitations);

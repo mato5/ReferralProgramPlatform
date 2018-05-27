@@ -144,7 +144,6 @@ public class ProgramResource {
     }
 
     @GET
-    @PermitAll
     public Response findAllPrograms() {
         logger.debug("Finding all programs.");
 
@@ -248,6 +247,34 @@ public class ProgramResource {
         try {
             User customer = userServices.findById(id);
             programs = programServices.findByActiveUser(customer);
+        } catch (UserNotFoundException e) {
+            logger.error("No user found");
+            return Response.status(HttpCode.NOT_FOUND.getCode()).build();
+        }
+
+        logger.debug("Found {} programs", programs.size());
+
+        JsonElement jsonWithPagingAndEntries = JsonUtils.getJsonElementWithPagingAndEntries(
+                new PaginatedData<Program>(programs.size(), programs), programJsonConverter);
+        return Response.status(HttpCode.OK.getCode()).entity(JsonWriter.writeToString(jsonWithPagingAndEntries))
+                .build();
+    }
+
+    @GET
+    @Path("/waiting/{id}")
+    @PermitAll
+    public Response findByWaiting(@PathParam("id") Long id) {
+        logger.debug("Finding all programs by waiting user ID: {}", id);
+
+        if (!securityContext.isUserInRole(User.Roles.ADMINISTRATOR.name())) {
+            if (!isLoggedUser(id)) {
+                return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+            }
+        }
+
+        List<Program> programs;
+        try {
+            programs = programServices.findByWaitingCustomer(id);
         } catch (UserNotFoundException e) {
             logger.error("No user found");
             return Response.status(HttpCode.NOT_FOUND.getCode()).build();
@@ -598,13 +625,12 @@ public class ProgramResource {
 
     @PUT
     @Path("/{name}/role")
-    @PermitAll
     public Response getUsersRole(@PathParam("name") String programName, String body) {
         logger.debug("Get users role in program name: {}", programName);
         Response.ResponseBuilder responseBuilder;
         User.Roles role;
         try {
-            User user = userServices.findByEmail(getEmailFromJson(body));
+            User user = userServices.findByEmail(body);
             Program program = programServices.findByName(programName);
             role = programServices.getUsersRole(user, program);
             logger.debug("Role found for program name: {}", programName);
@@ -664,8 +690,4 @@ public class ProgramResource {
         return JsonReader.getStringOrNull(jsonObject, "name");
     }
 
-    private String getEmailFromJson(final String body) {
-        final JsonObject jsonObject = JsonReader.readAsJsonObject(body);
-        return JsonReader.getStringOrNull(jsonObject, "email");
-    }
 }

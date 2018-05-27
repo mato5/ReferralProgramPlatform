@@ -62,6 +62,13 @@ public class ProgramRepository extends GenericRepository<Program> {
 
     }
 
+    public List<Program> findByWaitingUser(User user) {
+        String query = "select p from Program p join p.waitingList w join w.list l where l LIKE :param";
+
+        return em.createQuery(query, Program.class)
+                .setParameter("param", "%/" + user.getId()).getResultList();
+    }
+
     public boolean alreadyExists(Program program) {
         return alreadyExists("name", program.getName(), null);
     }

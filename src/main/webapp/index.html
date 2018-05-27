@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html ng-app="platform">
+<head>
+    <meta charset="utf-8"/>
+    <title>Referral Program Platform</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+          integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.css">
+
+</head>
+<body>
+<div class="jumbotron">
+    <div class="container">
+        <div>
+            <div ng-class="{ 'alert': flash, 'alert-success': flash.type === 'success', 'alert-danger': flash.type === 'error' }"
+                 ng-if="flash" ng-bind="flash.message"></div>
+            <div ng-view></div>
+        </div>
+    </div>
+</div>
+<div class="credits text-center">
+    <p>
+        <a href="https://github.com/mato5/ReferralProgramPlatform">Referral Program Platform - GitHub</a>
+    </p>
+</div>
+
+<script src="//code.jquery.com/jquery-3.1.1.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-route.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular-cookies.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+        crossorigin="anonymous"></script>
+<script src="//angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/raphael/2.2.7/raphael.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/treant-js/1.0/Treant.js"></script>
+
+<script src="app.js"></script>
+<script src="services/auth.service.js"></script>
+<script src="services/flash.service.js"></script>
+<script src="services/application.service.js"></script>
+<script src="services/user.service.js"></script>
+<script src="services/invitation.service.js"></script>
+<script src="services/program.service.js"></script>
+
+
+<script src="controllers/home.controller.js"></script>
+<script src="controllers/login.controller.js"></script>
+<script src="controllers/logout.controller.js"></script>
+<script src="controllers/program.controller.js"></script>
+<script src="controllers/register.controller.js"></script>
+<script src="controllers/invitation.controller.js"></script>
+</body>
+</html>

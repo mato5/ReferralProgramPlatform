@@ -21,16 +21,19 @@ import com.platform.app.platformUser.exception.UserNotFoundException;
 import com.platform.app.platformUser.model.User;
 import com.platform.app.platformUser.services.PlatformUserServices;
 import com.platform.app.program.exception.ProgramNotFoundException;
+import com.platform.app.program.model.Program;
 import com.platform.app.program.services.ProgramServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.security.RolesAllowed;
+import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.ws.rs.*;
 import javax.ws.rs.core.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.platform.app.common.model.StandardsOperationResults.getOperationResultDependencyNotFound;
 import static com.platform.app.common.model.StandardsOperationResults.getOperationResultInvalidField;
@@ -67,6 +70,7 @@ public class InvitationResource {
 
 
     @POST
+    @PermitAll
     public Response send(String body) {
         logger.debug("Adding a new invitation with body {}", body);
         Invitation invitation = invitationJsonConverter.convertFrom(body);
@@ -106,7 +110,7 @@ public class InvitationResource {
 
     @POST
     @Path("/batch")
-    @RolesAllowed({"ADMINISTRATOR"})
+    @PermitAll
     public Response sendInBatch(String body) {
         logger.debug("Sending invitations in a batch with body {}", body);
         Long programId = getProgramIdFromJson(body);
@@ -149,7 +153,7 @@ public class InvitationResource {
 
     @GET
     @Path("/{id}")
-    @RolesAllowed({"ADMINISTRATOR"})
+    @PermitAll
     public Response findById(@PathParam("id") final Long id) {
         logger.debug("Find invitation by id: {}", id);
         Response.ResponseBuilder responseBuilder;
@@ -158,7 +162,7 @@ public class InvitationResource {
             OperationResult result = OperationResult.success(invitationJsonConverter.convertToJsonElement(invitation));
             responseBuilder = Response.status(HttpCode.OK.getCode()).entity(OperationResultJsonWriter.toJson(result));
             logger.debug("Invitation found by id: {}", invitation);
-        } catch (InvitationServiceException e) {
+        } catch (InvitationNotFoundException e) {
             logger.error("No invitation found for id", id);
             responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
         }
@@ -167,6 +171,7 @@ public class InvitationResource {
     }
 
     @GET
+    @PermitAll
     public Response findMyInvitations() {
         logger.debug("Finding invitations of the active user");
 
@@ -181,7 +186,22 @@ public class InvitationResource {
     }
 
     @GET
+    @Path("/program/{id}/left")
+    @PermitAll
+    public Response getInvitationsLeft(@PathParam("id") Long id) {
+        logger.debug("Finding invitations left of the active user");
+        try {
+            User user = userServices.findByEmail(securityContext.getUserPrincipal().getName());
+            int left = invitationServices.findInvitationsLeft(user.getId(), id);
+            return Response.status(HttpCode.OK.getCode()).entity(left).build();
+        } catch (Exception e) {
+            return Response.status(HttpCode.NOT_FOUND.getCode()).build();
+        }
+    }
+
+    @GET
     @Path("/sent")
+    @PermitAll
     public Response findSentInvitations() {
 
         logger.debug("Finding invitations sent by the active user");
@@ -199,7 +219,7 @@ public class InvitationResource {
 
     @GET
     @Path("/program/{id}")
-    @RolesAllowed({"ADMINISTRATOR"})
+    @PermitAll
     public Response findByProgram(@PathParam("id") Long id) {
         logger.debug("Finding invitations by program id: {}", id);
 
@@ -219,7 +239,7 @@ public class InvitationResource {
 
     @GET
     @Path("/all")
-    @RolesAllowed({"ADMINISTRATOR"})
+    @PermitAll
     public Response findAllInvitations() {
         logger.debug("Finding all invitations.");
 
@@ -235,7 +255,7 @@ public class InvitationResource {
 
     @DELETE
     @Path("/{id}")
-    @RolesAllowed({"ADMINISTRATOR"})
+    @PermitAll
     public Response delete(@PathParam("id") Long id) {
         logger.debug("Delete invitation by id: {}", id);
 
@@ -246,7 +266,7 @@ public class InvitationResource {
             OperationResult result = OperationResult.success(invitationJsonConverter.convertToJsonElement(invitation));
             responseBuilder = Response.status(HttpCode.OK.getCode()).entity(OperationResultJsonWriter.toJson(result));
             logger.debug("Invitation deleted by id: {}", id);
-        } catch (InvitationServiceException e) {
+        } catch (InvitationNotFoundException e) {
             logger.error("No invitation found for id", id);
             responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
         }
@@ -256,6 +276,7 @@ public class InvitationResource {
 
     @PUT
     @Path("/{id}/decline")
+    @PermitAll
     public Response decline(@PathParam("id") Long id) {
         logger.debug("Decline invitation by id: {}", id);
 
@@ -280,6 +301,9 @@ public class InvitationResource {
         } catch (ProgramNotFoundException e) {
             logger.error("Program not found");
             responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
+        } catch (InvitationNotFoundException e) {
+            logger.error("Invitation not found");
+            responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
         }
 
         return responseBuilder.build();
@@ -287,6 +311,7 @@ public class InvitationResource {
 
     @PUT
     @Path("/{id}/accept")
+    @PermitAll
     public Response accept(@PathParam("id") Long id, String body) {
         logger.debug("Accept invitation by id: {} location: {}", id, body);
 
@@ -311,6 +336,41 @@ public class InvitationResource {
             responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
         } catch (ProgramNotFoundException e) {
             logger.error("Program not found");
+            responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
+        } catch (InvitationNotFoundException e) {
+            logger.error("Invitation not found");
+            responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
+        }
+
+        return responseBuilder.build();
+    }
+
+    @GET
+    @Path("/chart/{prog_id}")
+    @PermitAll
+    public Response getTreeChart(@PathParam("prog_id") Long programId) {
+        logger.debug("Retrieving tree chart from program ID: {}", programId);
+        if (!isUserAllowed(securityContext.getUserPrincipal().getName(), programId)) {
+            return Response.status(HttpCode.FORBIDDEN.getCode()).build();
+        }
+        Response.ResponseBuilder responseBuilder;
+        try {
+            Program program = programServices.findById(programId);
+            List<Invitation> invitations = invitationServices.findByProgram(programId);
+            Set<User> users = new HashSet<>(program.getAdmins());
+            for (Invitation inv : invitations) {
+                User by = userServices.findById(inv.getByUserId());
+                User to = userServices.findById(inv.getToUserId());
+                users.add(by);
+                users.add(to);
+            }
+            OperationResult result = OperationResult.success(invitationJsonConverter.getTreeChart(invitations, users, program.getName()));
+            responseBuilder = Response.status(HttpCode.OK.getCode()).entity(OperationResultJsonWriter.toJson(result));
+        } catch (ProgramNotFoundException e) {
+            logger.error("Program not found");
+            responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
+        } catch (UserNotFoundException e) {
+            logger.error("User not found");
             responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
         }
 

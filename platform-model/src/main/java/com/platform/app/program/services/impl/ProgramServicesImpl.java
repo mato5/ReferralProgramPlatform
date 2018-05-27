@@ -96,6 +96,12 @@ public class ProgramServicesImpl implements ProgramServices {
         if (program.getAdmins().contains(admin)) {
             throw new ProgramServiceException("This program already contains the specified admin");
         }
+        if (program.getWaitingList().getOrderedIds().contains(admin.getId())) {
+            unregisterOnWaitingList(programId, adminId);
+        }
+        if (program.getActiveCustomers().contains(admin)) {
+            removeCustomer(adminId, programId);
+        }
         program.addAdmin(admin);
         programRepository.update(program);
 
@@ -175,6 +181,15 @@ public class ProgramServicesImpl implements ProgramServices {
             throw new UserNotFoundException();
         }
         return programRepository.findByActiveUser(customer);
+    }
+
+    @Override
+    public List<Program> findByWaitingCustomer(Long customerId) {
+        User customer = userRepository.findById(customerId);
+        if (customer == null) {
+            throw new UserNotFoundException();
+        }
+        return programRepository.findByWaitingUser(customer);
     }
 
     @Override
@@ -369,6 +384,10 @@ public class ProgramServicesImpl implements ProgramServices {
         }
         if (program.getActiveCustomers().contains(user)) {
             return User.Roles.CUSTOMER;
+        }
+        List<Program> programsWaiting = programRepository.findByWaitingUser(user);
+        if (programsWaiting.contains(program)) {
+            return User.Roles.WAITING;
         }
         return User.Roles.NONE;
     }

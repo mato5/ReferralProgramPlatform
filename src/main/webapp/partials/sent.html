@@ -1,0 +1,57 @@
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Referral Platform</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li><a href="#">Home</a></li>
+            <li uib-dropdown>
+                <a uib-dropdown-toggle href="#">Programs
+                    <span class="caret"></span></a>
+                <ul uib-dropdown-menu>
+                    <li ng-show="vm.logged"><a href="#!/create_program">Create a new one</a></li>
+                    <li><a href="#!/programs">All Programs</a></li>
+                    <li ng-show="vm.logged"><a href="#!/my_programs">My Programs</a></li>
+                </ul>
+            <li class="active" ng-show="vm.logged" uib-dropdown>
+                <a uib-dropdown-toggle href="#">Invitations
+                    <span class="caret"></span></a>
+                <ul uib-dropdown-menu>
+                    <li><a href="#!/received">Received</a></li>
+                    <li><a href="#!/sent">Sent</a></li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="#!/register" ng-show="!vm.logged"><span class="glyphicon glyphicon-user"></span> Sign Up</a>
+            </li>
+            <li><a href="#!/login" ng-show="!vm.logged"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+            <li><a href="#!/logout" ng-show="vm.logged"><span class="glyphicon glyphicon-log-out"></span> Logout
+                [{{vm.user.username}}]</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<h4><strong>Sent Invitations</strong></h4>
+<div>
+    <table class="table table-hover table-condensed table-striped">
+        <thead class="levelOne">
+        <tr>
+            <th>Sent To</th>
+            <th>Program</th>
+            <th>Time sent</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody data-ng-repeat="inv in vm.sent" data-ng-switch
+               on="dayDataCollapse[$index]">
+        <tr class="clickableRow" title="Click to visit a program site."
+            data-ng-click="vm.redirectToProgramPage(program.id)">
+            <td>{{inv.toUser.email}}</td>
+            <td>{{inv.program.name}}</td>
+            <td>{{inv.sent | date: 'EEE d MMM y, H:mm:ss'}}</td>
+            <td>{{inv.status}}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>

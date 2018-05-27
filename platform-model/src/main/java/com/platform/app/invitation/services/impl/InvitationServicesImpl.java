@@ -65,9 +65,15 @@ public class InvitationServicesImpl implements InvitationServices {
         if (invitedTo.getActiveCustomers().contains(invited)) {
             throw new InvitationServiceException("This customer is currently participating in this program.");
         }
+        if (invitedTo.getAdmins().contains(invited)) {
+            throw new InvitationServiceException("The invited user is already an admin of the specified program");
+        }
         if (!invitedTo.getActiveCustomers().contains(invitedBy) && !invitedTo.getAdmins().contains(invitedBy) &&
                 !invitedBy.getUserType().equals(User.UserType.EMPLOYEE)) {
             throw new InvitationServiceException("This operation is forbidden for the provided users");
+        }
+        if (invitedTo.getWaitingList().getOrderedIds().contains(invited.getId())) {
+            programServices.unregisterOnWaitingList(invitedTo.getId(), invited.getId());
         }
         if (User.Roles.CUSTOMER.equals(programServices.getUsersRole(invitedBy.getId(), invitedTo.getId()))) {
             List<Invitation> usersInvitations = invitationRepository.findByInvitee(invitedBy.getId());
@@ -88,6 +94,33 @@ public class InvitationServicesImpl implements InvitationServices {
         }
         inv = invitationRepository.add(inv);
         return inv;
+    }
+
+    @Override
+    public int findInvitationsLeft(Long userId, Long programId) {
+        User user = userRepository.findById(userId);
+        Program program = programRepository.findById(programId);
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
+        if (programServices.getUsersRole(user, program).equals(User.Roles.ADMINISTRATOR)) {
+            return -1;
+        }
+        List<Invitation> userInvs = invitationRepository.findByInvitee(user.getId());
+        Invitation lookingFor = null;
+        for (Invitation item : userInvs) {
+            if (item.getProgramId().equals(program.getId()) && !item.isDeclined()) {
+                lookingFor = item;
+                break;
+            }
+        }
+        if (lookingFor == null) {
+            return 0;
+        }
+        return lookingFor.getInvitationsLeft();
     }
 
     @Override
@@ -194,29 +227,47 @@ public class InvitationServicesImpl implements InvitationServices {
 
     @Override
     public List<Invitation> findByProgram(Long id) {
+        Program program = programRepository.findById(id);
+        if (program == null) {
+            throw new ProgramNotFoundException();
+        }
         return invitationRepository.findByProgram(id);
     }
 
     @Override
     public List<Invitation> findByInvitor(Long id) {
+        User user = userRepository.findById(id);
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
         return invitationRepository.findByInvitor(id);
     }
 
     @Override
     public List<Invitation> findByInvitor(String email) {
         User user = userRepository.findByEmail(email);
-        return findByInvitor(user.getId());
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+        return invitationRepository.findByInvitor(user.getId());
     }
 
     @Override
     public List<Invitation> findByInvitee(Long id) {
+        User user = userRepository.findById(id);
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
         return invitationRepository.findByInvitee(id);
     }
 
     @Override
     public List<Invitation> findByInvitee(String email) {
         User user = userRepository.findByEmail(email);
-        return findByInvitee(user.getId());
+        if (user == null) {
+            throw new UserNotFoundException();
+        }
+        return invitationRepository.findByInvitee(user.getId());
     }
 
     @Override

@@ -143,7 +143,7 @@ public class ProgramServicesUTest {
         programServices.changeName("new name", 1L);
     }
 
-    @Test
+    /*@Test
     public void addAdmin() {
         Program program = programWithId(program1(), 1L);
         Admin user = new Admin();
@@ -157,7 +157,7 @@ public class ProgramServicesUTest {
         when(programRepository.findById(1L)).thenReturn(program);
         programServices.addAdmin(1L, 1L);
         verify(programRepository).update(program);
-    }
+    }*/
 
     @Test(expected = ProgramNotFoundException.class)
     public void addAdminProgramNotFound() {

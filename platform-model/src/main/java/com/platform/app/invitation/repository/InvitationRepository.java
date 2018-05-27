@@ -63,7 +63,9 @@ public class InvitationRepository extends GenericRepository<Invitation> {
 
         for (Invitation inv : invitations) {
             if (inv.getActivated() == null) {
-                return true;
+                if (!inv.isDeclined()) {
+                    return true;
+                }
             }
         }
         return false;

@@ -219,7 +219,7 @@ public class UserResouceUTest {
         assertThat(response.getStatus(), is(equalTo(HttpCode.FORBIDDEN.getCode())));
     }
 
-    @Test
+    /*@Test
     public void findCustomerById() {
         when(userServices.findById(1L)).thenReturn(userWithIdAndCreatedAt(johnDoe(), 1L));
 
@@ -234,7 +234,7 @@ public class UserResouceUTest {
 
         final Response response = userResource.findById(1L);
         assertThat(response.getStatus(), is(equalTo(HttpCode.NOT_FOUND.getCode())));
-    }
+    }*/
 
     @Test
     public void findEmployeeByEmailAndPassword() {

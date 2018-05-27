@@ -38,7 +38,7 @@ public abstract class User implements Serializable {
     private String password;
 
     public enum Roles {
-        CUSTOMER, EMPLOYEE, ADMINISTRATOR, NONE
+        CUSTOMER, EMPLOYEE, ADMINISTRATOR, NONE, WAITING
     }
 
     @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"),

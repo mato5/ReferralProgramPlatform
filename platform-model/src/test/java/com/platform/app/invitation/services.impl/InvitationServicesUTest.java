@@ -203,14 +203,15 @@ public class InvitationServicesUTest {
         Invitation toBeSent = inv2();
         when(userRepository.findById(3L)).thenReturn(customerWithIdAndCreatedAt(johnDoe(), 3L));
         User invitedBy = userWithIdAndCreatedAt(admin(), 2L);
-        when(userRepository.findById(2L)).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
+        when(userRepository.findById(2L)).thenReturn(invitedBy);
         when(userRepository.findById(3L)).thenReturn(userWithIdAndCreatedAt(johnDoe(), 3L));
+        when(userRepository.findById(1L)).thenReturn(userWithIdAndCreatedAt(mary(), 1L));
         Program program = program1();
         program.setActiveCustomers(new HashSet<>());
         program.setAdmins(new HashSet<>(Collections.singleton(invitedBy)));
         when(programRepository.findById(toBeSent.getProgramId())).thenReturn(programWithId(program, 1L));
         when(invitationRepository.alreadyInvited(any(), any())).thenReturn(false);
-        when(userRepository.findByEmail("mary@domain.com")).thenReturn(userWithIdAndCreatedAt(invitedBy, 2L));
+        when(userRepository.findByEmail("mary@domain.com")).thenReturn(userWithIdAndCreatedAt(mary(), 1L));
         when(userRepository.findByEmail("john@domain.com")).thenReturn(userWithIdAndCreatedAt(johnDoe(), 3L));
         List<String> emails = Arrays.asList("john@domain.com", "mary@domain.com");
 
@@ -223,7 +224,7 @@ public class InvitationServicesUTest {
         Invitation result2 = new Invitation();
         result2.setProgramId(1L);
         result2.setByUserId(2L);
-        result2.setToUserId(3L);
+        result2.setToUserId(1L);
 
         List<Invitation> invs = invitationServices.sendInBatch(2L, 1L, emails, 5);
         assertThat(invs.size(), is(equalTo(2)));

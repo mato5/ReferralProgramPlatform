@@ -1,0 +1,86 @@
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Referral Platform</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li><a href="#">Home</a></li>
+            <li class="active" uib-dropdown>
+                <a uib-dropdown-toggle href="#">Programs
+                    <span class="caret"></span></a>
+                <ul uib-dropdown-menu>
+                    <li ng-show="vm.logged"><a href="#!/create_program">Create a new one</a></li>
+                    <li><a href="#!/programs">All Programs</a></li>
+                    <li ng-show="vm.logged"><a href="#!/my_programs">My Programs</a></li>
+                </ul>
+            <li ng-show="vm.logged" uib-dropdown>
+                <a uib-dropdown-toggle href="#">Invitations
+                    <span class="caret"></span></a>
+                <ul uib-dropdown-menu>
+                    <li><a href="#!/received">Received</a></li>
+                    <li><a href="#!/sent">Sent</a></li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="#!/register" ng-show="!vm.logged"><span class="glyphicon glyphicon-user"></span> Sign Up</a>
+            </li>
+            <li><a href="#!/login" ng-show="!vm.logged"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+            <li><a href="#!/logout" ng-show="vm.logged"><span class="glyphicon glyphicon-log-out"></span> Logout
+                [{{vm.user.username}}]</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<h4><strong>Invitations</strong></h4>
+<div>
+    <table class="table table-hover table-condensed table-striped">
+        <thead class="levelOne">
+        <tr>
+            <th>Sent By</th>
+            <th>Sent To</th>
+            <th>Status</th>
+        </tr>
+        </thead>
+        <tbody data-ng-repeat="inv in vm.invites" data-ng-switch
+               on="dayDataCollapse[$index]">
+        <tr class="clickableRow" title="Click to toggle collapse/expand status of this invitation."
+            data-ng-click="selectTableRow($index, inv.id)">
+            <td>{{inv.byUser.email}}</td>
+            <td>{{inv.toUser.email}}</td>
+            <td>{{inv.status}}</td>
+        </tr>
+        <tr data-ng-switch-when="true">
+            <td colspan="9">
+                <div class="span9">
+                    <div>
+                        <table class="table table-hover table-condensed table-striped">
+                            <thead class="levelTwo">
+                            <tr>
+                                <th>Time Sent</th>
+                                <th ng-show="(inv.status == 'Accepted')">Time Accepted</th>
+                                <th ng-show="(inv.status == 'Accepted')">Accepted From</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>{{inv.sent | date: 'EEE d MMM y, H:mm:ss'}}</td>
+                                <td ng-show="(inv.status == 'Accepted')">{{inv.inv.activated | date: 'EEE d MMM y,
+                                    H:mm:ss'}}
+                                </td>
+                                <td ng-show="(inv.status == 'Accepted')">{{inv.inv.activatedLocation.city}}</td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+    <a href="#!/programs/{{vm.programId}}/invitations/chart" class="btn btn-info"
+       ng-show="vm.logged">
+        <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
+        Visualize in a Tree Chart
+    </a>
+</div>

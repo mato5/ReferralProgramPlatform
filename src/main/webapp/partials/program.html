@@ -1,0 +1,200 @@
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Referral Platform</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li><a href="#">Home</a></li>
+            <li class="active" uib-dropdown>
+                <a uib-dropdown-toggle href="#">Programs
+                    <span class="caret"></span></a>
+                <ul uib-dropdown-menu>
+                    <li ng-show="vm.logged"><a href="#!/create_program">Create a new one</a></li>
+                    <li><a href="#!/programs">All Programs</a></li>
+                    <li ng-show="vm.logged"><a href="#!/my_programs">My Programs</a></li>
+                </ul>
+            <li ng-show="vm.logged" uib-dropdown>
+                <a uib-dropdown-toggle href="#">Invitations
+                    <span class="caret"></span></a>
+                <ul uib-dropdown-menu>
+                    <li><a href="#!/received">Received</a></li>
+                    <li><a href="#!/sent">Sent</a></li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="#!/register" ng-show="!vm.logged"><span class="glyphicon glyphicon-user"></span> Sign Up</a>
+            </li>
+            <li><a href="#!/login" ng-show="!vm.logged"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+            <li><a href="#!/logout" ng-show="vm.logged"><span class="glyphicon glyphicon-log-out"></span> Logout
+                [{{vm.user.username}}]</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<div>
+    <div class="span12 row-fluid">
+        <!-- START $scope.[model] updates -->
+        <!-- END $scope.[model] updates -->
+        <!-- START TABLE -->
+        <div class="row">
+            <div class="col-md-8 col-xs-8 col-sm-8 col-lg-8">
+                <h2><strong>{{vm.program.name}}</strong></h2>
+            </div>
+            <div class="col-md-4 col-xs-4 col-sm-4 col-lg-4">
+                <form>
+                    <br>
+                    <a href="#!/programs/{{vm.program.id}}/invitations" class="btn btn-info"
+                       ng-show="vm.logged && (vm.role == 'ADMINISTRATOR')">
+                        <span class="glyphicon glyphicon-stats" aria-hidden="true"></span>
+                        Display Invitation Statistics
+                    </a>
+                </form>
+            </div>
+            <div class="col-md-4 col-xs-4 col-sm-4 col-lg-4">
+                <form>
+                    <br>
+                    <a ng-click="vm.leaveProgram()" class="btn btn-warning"
+                       ng-show="vm.logged && (vm.role == 'CUSTOMER')">
+                        <span class="glyphicon glyphicon-remove-circle" aria-hidden="true"></span>
+                        Leave Program
+                    </a>
+                </form>
+            </div>
+        </div>
+        <h4>Applications:</h4>
+        <div>
+            <table class="table table-hover table-condensed table-striped">
+                <thead class="levelOne">
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Available at</th>
+                </tr>
+                </thead>
+                <tbody data-ng-repeat="app in vm.applications" data-ng-switch
+                       on="dayDataCollapse[$index]">
+                <tr class="clickableRow" data-ng-click="selectTableRow($index, admin.id)">
+                    <td>{{app.name}}</td>
+                    <td>{{app.description}}</td>
+                    <td><a href="{{app.URL}}" style="cursor: pointer" title="Click to visit this application's site">
+                        <span class="glyphicon glyphicon-globe"></span>
+                    </a></td>
+                    <td ng-show="vm.logged && (vm.role == 'ADMINISTRATOR')" title="Click to remove this application">
+                        <a ng-click="vm.deleteApp(app.id)" style="cursor: pointer">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <a href="#!/programs/{{vm.program.id}}/register_app" class="btn btn-primary"
+           ng-show="vm.logged && (vm.role == 'ADMINISTRATOR')">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            Register a new app
+        </a>
+        <h4>Admins:</h4>
+        <div>
+            <table class="table table-hover table-condensed table-striped">
+                <thead class="levelOne">
+                <tr>
+                    <th>Name</th>
+                    <th ng-show="vm.logged && (vm.role != 'NONE') && (vm.role != 'WAITING')">E-mail</th>
+                </tr>
+                </thead>
+                <tbody data-ng-repeat="admin in vm.admins" data-ng-switch
+                       on="dayDataCollapse[$index]">
+                <tr class="clickableRow" title="Click to toggle collapse/expand songs in this album."
+                    data-ng-click="selectTableRow($index, admin.id)">
+                    <td>{{admin.name}}</td>
+                    <td ng-show="vm.logged && (vm.role != 'NONE') && (vm.role != 'WAITING')">{{admin.email}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <a href="#!/programs/{{vm.program.id}}/add_admin" class="btn btn-primary"
+           ng-show="vm.logged && (vm.role == 'ADMINISTRATOR')">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+            Add an administrator
+        </a>
+        <h4>Active Customers:</h4>
+        <div>
+            <table class="table table-hover table-condensed table-striped">
+                <thead class="levelOne">
+                <tr>
+                    <th>Name</th>
+                    <th ng-show="vm.logged && (vm.role != 'NONE') && (vm.role != 'WAITING')">E-mail</th>
+                </tr>
+                </thead>
+                <tbody data-ng-repeat="customer in vm.customers" data-ng-switch
+                       on="dayDataCollapse[$index]">
+                <tr class="clickableRow" title="Click to toggle collapse/expand songs in this album."
+                    data-ng-click="selectTableRow($index, customer.id)">
+                    <td>{{customer.name}}</td>
+                    <td ng-show="vm.logged && (vm.role != 'NONE') && (vm.role != 'WAITING')">{{customer.email}}</td>
+                    <td ng-show="vm.logged && (vm.role == 'ADMINISTRATOR')">
+                        <a ng-click="vm.removeCustomer(customer.email)" style="cursor: pointer"
+                           title="Click to remove user from the program">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <h4>Waiting List:</h4>
+        <div>
+            <table class="table table-hover table-condensed table-striped">
+                <thead class="levelOne">
+                <tr>
+                    <th>User Name</th>
+                    <th ng-show="vm.logged && (vm.role != 'NONE') && (vm.role != 'WAITING')">E-mail</th>
+                    <th>Registered</th>
+                </tr>
+                </thead>
+                <tbody data-ng-repeat="user in vm.waiting" data-ng-switch
+                       on="dayDataCollapse[$index]">
+                <tr class="clickableRow" title="Click to toggle collapse/expand songs in this album."
+                    data-ng-click="selectTableRow($index, user.id)">
+                    <td ng-show="vm.checkBox"><input type="checkbox" name="name1"/>&nbsp;</td>
+                    <td>{{user.name}}</td>
+                    <td ng-show="vm.logged && (vm.role != 'NONE') && (vm.role != 'WAITING')">{{user.email}}</td>
+                    <td>{{user.since | date: 'EEE d MMM y, H:mm:ss'}}</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="row">
+            <div class="col-md-4 col-xs-6 col-sm-6 col-lg-3">
+                <form>
+                    <a href="#!/programs/{{vm.program.id}}/invite_list" class="btn btn-primary"
+                       ng-show="vm.logged && (vm.role == 'ADMINISTRATOR')">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        Invite customers from the waiting list
+                    </a>
+                </form>
+            </div>
+            <div class="col-md-4 col-xs-6 col-sm-6 col-lg-3">
+                <form>
+                    <a href="#!/programs/{{vm.program.id}}/invite_friend" class="btn btn-success"
+                       ng-show="vm.logged && (vm.role != 'NONE') && (vm.role != 'WAITING')">
+                        <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                        Invite friends!
+                    </a>
+                </form>
+            </div>
+        </div>
+        <a href ng-click="vm.registerOnWaitingList(vm.program.id)" class="btn btn-success"
+           ng-show="vm.logged && (vm.role == 'NONE')">
+            <span class="glyphicon glyphicon-ok-sign" aria-hidden="true"></span>
+            Register on the waiting list
+        </a>
+        <a href ng-click="vm.unregisterOnWaitingList(vm.program.id)" class="btn btn-warning"
+           ng-show="vm.logged && (vm.role == 'WAITING')">
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+            Unregister from the waiting list
+        </a>
+        <!-- END TABLE -->
+    </div>
+</div>

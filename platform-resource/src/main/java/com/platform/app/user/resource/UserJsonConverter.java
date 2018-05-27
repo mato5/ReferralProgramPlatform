@@ -68,6 +68,14 @@ public class UserJsonConverter implements EntityJsonConverter<User> {
         return jsonObject;
     }
 
+    public JsonElement convertPrincipals(String email, Long id, String role) {
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("email", email);
+        jsonObject.addProperty("id", id);
+        jsonObject.addProperty("role", role);
+        return jsonObject;
+    }
+
     private User getUserInstance(final JsonObject userJson) {
         final UserType userType = UserType.valueOf(JsonReader.getStringOrNull(userJson, "type"));
         if (UserType.EMPLOYEE.equals(userType)) {

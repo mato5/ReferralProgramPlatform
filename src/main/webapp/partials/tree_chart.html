@@ -1,0 +1,40 @@
+<nav class="navbar navbar-inverse">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="#">Referral Platform</a>
+        </div>
+        <ul class="nav navbar-nav">
+            <li><a href="#">Home</a></li>
+            <li class="active" uib-dropdown>
+                <a uib-dropdown-toggle href="#">Programs
+                    <span class="caret"></span></a>
+                <ul uib-dropdown-menu>
+                    <li ng-show="vm.logged"><a href="#!/create_program">Create a new one</a></li>
+                    <li><a href="#!/programs">All Programs</a></li>
+                    <li ng-show="vm.logged"><a href="#!/my_programs">My Programs</a></li>
+                </ul>
+            <li ng-show="vm.logged" uib-dropdown>
+                <a uib-dropdown-toggle href="#">Invitations
+                    <span class="caret"></span></a>
+                <ul uib-dropdown-menu>
+                    <li><a href="#!/received">Received</a></li>
+                    <li><a href="#!/sent">Sent</a></li>
+                </ul>
+            </li>
+        </ul>
+        <ul class="nav navbar-nav navbar-right">
+            <li><a href="#!/register" ng-show="!vm.logged"><span class="glyphicon glyphicon-user"></span> Sign Up</a>
+            </li>
+            <li><a href="#!/login" ng-show="!vm.logged"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+            <li><a href="#!/logout" ng-show="vm.logged"><span class="glyphicon glyphicon-log-out"></span> Logout
+                [{{vm.user.username}}]</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+<div><a ng-click="vm.reloadData()" class="btn btn-primary">
+    <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span>
+    Refresh Data
+</a></div>
+<div ng-cloak class="chart" id="tree_chart"></div>
+<div ng-cloak id="chart"></div>

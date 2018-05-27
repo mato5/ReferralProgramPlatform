@@ -146,7 +146,6 @@ public class UserResource {
 
     @GET
     @Path("/{id}")
-    @RolesAllowed({"ADMINISTRATOR"})
     public Response findById(@PathParam("id") final Long id) {
         logger.debug("Find user by id: {}", id);
         ResponseBuilder responseBuilder;
@@ -157,6 +156,24 @@ public class UserResource {
             logger.debug("User found by id: {}", user);
         } catch (final UserNotFoundException e) {
             logger.error("No user found for id", id);
+            responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
+        }
+
+        return responseBuilder.build();
+    }
+
+    @PUT
+    @Path("/email")
+    public Response findByEmail(String body) {
+        logger.debug("Find user by email: {}", body);
+        ResponseBuilder responseBuilder;
+        try {
+            final User user = userServices.findByEmail(body);
+            final OperationResult result = OperationResult.success(userJsonConverter.convertToJsonElement(user));
+            responseBuilder = Response.status(HttpCode.OK.getCode()).entity(OperationResultJsonWriter.toJson(result));
+            logger.debug("User found by id: {}", user);
+        } catch (final UserNotFoundException e) {
+            logger.error("No user found for email: {}", body);
             responseBuilder = Response.status(HttpCode.NOT_FOUND.getCode());
         }
 
@@ -182,6 +199,20 @@ public class UserResource {
         }
 
         return responseBuilder.build();
+    }
+
+    @PUT
+    @Path("/email_exists")
+    public Response emailExists(String body) {
+        try {
+            User u = userServices.findByEmail(body);
+            if (u != null) {
+                return Response.status(HttpCode.OK.getCode()).entity(true).build();
+            }
+        } catch (Exception e) {
+            return Response.status(HttpCode.OK.getCode()).entity(false).build();
+        }
+        return Response.status(HttpCode.OK.getCode()).entity(false).build();
     }
 
     @GET

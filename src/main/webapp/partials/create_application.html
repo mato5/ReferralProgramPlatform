@@ -1,0 +1,31 @@
+<div class="col-md-6 col-md-offset-3">
+    <h2>Register a new application</h2>
+    <form name="form" ng-submit="vm.registerApp()" role="form">
+        <div class="form-group" ng-class="{ 'has-error': form.appName.$dirty && form.appName.$invalid }">
+            <label for="appName">Name</label>
+            <input type="text" name="appName" id="appName" class="form-control" ng-model="vm.application.name"
+                   ng-minlength="3" ng-maxlength="50" required/>
+            <span ng-show="form.appName.$dirty && form.appName.$invalid" class="help-block">Application's name is invalid (must be 3-50 characters long)</span>
+        </div>
+        <div class="form-group" ng-class="{ 'has-error': form.description.$dirty && form.description.$invalid }">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" class="form-control"
+                      ng-model="vm.application.description"></textarea>
+            <span ng-show="form.description.$dirty && form.description.$invalid" class="help-block">Application's description is required</span>
+        </div>
+        <div class="form-group" ng-class="{ 'has-error': form.appName.$dirty && form.appName.$invalid }">
+            <label for="appUrl">Application URL</label>
+            <input type="url" name="appUrl" id="appUrl" class="form-control" ng-model="vm.application.URL"
+                   app-url-not-used ng-model-options="{ debounce: 500 }" required/>
+            <span ng-show="form.appUrl.$dirty && form.appUrl.$invalid" class="help-block">Application URL is either invalid or used by another app (Make sure to provide the protocol as well, i.e. http:// ...)</span>
+        </div>
+        <div class="form-actions">
+            <button type="submit" ng-disabled="form.$invalid || vm.dataLoading" class="btn btn-primary">Register
+                Application
+            </button>
+            <img ng-if="vm.dataLoading"
+                 src="data:image/gif;base64,R0lGODlhEAAQAPIAAP///wAAAMLCwkJCQgAAAGJiYoKCgpKSkiH/C05FVFNDQVBFMi4wAwEAAAAh/hpDcmVhdGVkIHdpdGggYWpheGxvYWQuaW5mbwAh+QQJCgAAACwAAAAAEAAQAAADMwi63P4wyklrE2MIOggZnAdOmGYJRbExwroUmcG2LmDEwnHQLVsYOd2mBzkYDAdKa+dIAAAh+QQJCgAAACwAAAAAEAAQAAADNAi63P5OjCEgG4QMu7DmikRxQlFUYDEZIGBMRVsaqHwctXXf7WEYB4Ag1xjihkMZsiUkKhIAIfkECQoAAAAsAAAAABAAEAAAAzYIujIjK8pByJDMlFYvBoVjHA70GU7xSUJhmKtwHPAKzLO9HMaoKwJZ7Rf8AYPDDzKpZBqfvwQAIfkECQoAAAAsAAAAABAAEAAAAzMIumIlK8oyhpHsnFZfhYumCYUhDAQxRIdhHBGqRoKw0R8DYlJd8z0fMDgsGo/IpHI5TAAAIfkECQoAAAAsAAAAABAAEAAAAzIIunInK0rnZBTwGPNMgQwmdsNgXGJUlIWEuR5oWUIpz8pAEAMe6TwfwyYsGo/IpFKSAAAh+QQJCgAAACwAAAAAEAAQAAADMwi6IMKQORfjdOe82p4wGccc4CEuQradylesojEMBgsUc2G7sDX3lQGBMLAJibufbSlKAAAh+QQJCgAAACwAAAAAEAAQAAADMgi63P7wCRHZnFVdmgHu2nFwlWCI3WGc3TSWhUFGxTAUkGCbtgENBMJAEJsxgMLWzpEAACH5BAkKAAAALAAAAAAQABAAAAMyCLrc/jDKSatlQtScKdceCAjDII7HcQ4EMTCpyrCuUBjCYRgHVtqlAiB1YhiCnlsRkAAAOwAAAAAAAAAAAA=="/>
+            <a href="#!/my_programs" class="btn btn-link">Cancel</a>
+        </div>
+    </form>
+</div>
