@@ -7,9 +7,9 @@ A web application to manage referral programs. Referral programs enable us to se
 ### Installation and Usage
 
 WildFly credentials:<br>
-name: administrator<br>
-password: administrator<br>
+name: admin<br>
+password: admin<br>
 
 ### Requirements
 
-*Coming soon...*
+PostgreSQL database system
