@@ -6,6 +6,7 @@ A web application to manage referral programs. Referral programs enable us to se
 
 ### Installation and Usage
 
+[Preconfigured WildFly](https://drive.google.com/uc?export=download&id=1got748g8vyoqsn7ZpPIKRvQA-jbqYOfu)<br>
 WildFly credentials:<br>
 name: admin<br>
 password: admin<br>
