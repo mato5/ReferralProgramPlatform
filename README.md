@@ -6,11 +6,11 @@ A web application to manage referral programs. Referral programs enable us to se
 
 ### Installation and Usage
 
-[Preconfigured WildFly](https://drive.google.com/uc?export=download&id=1got748g8vyoqsn7ZpPIKRvQA-jbqYOfu)<br>
+[Preconfigured WildFly](https://drive.google.com/open?id=1SFbd3eC28T5eB8DZhlVivluO4xmqsYQD)<br>
 WildFly credentials:<br>
 name: admin<br>
 password: admin<br>
 
 ### Requirements
 
-PostgreSQL database system
+Java SE 9 or later
